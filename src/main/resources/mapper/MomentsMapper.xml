@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.timemanual.dao.Moments">
+
+    <!-- 查找 -->
+    <select id="findAllMoments" resultType="com.timemanual.entity.Moments">
+        select * from moments
+        select * from user where nickname = #{nickname}
+    </select>
+
+<!--    <select id="queryMoments" resultType="com.timemanual.entity.Moments">-->
+<!--        select * from moments  limit #{currentPage - 1} * #{pageSize}-->
+<!--        },${pageSize}-->
+<!--    </select>-->
+</mapper>
