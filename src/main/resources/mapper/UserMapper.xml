@@ -9,7 +9,7 @@
         WHERE u.delete_status = '1'
     </select>
 
-    <resultMap id="userMap" type="com.heeexy.example.util.model.One2Many">
+    <resultMap id="userMap" type="com.timemanual.util.model.One2Many">
         <id column="userId" property="userId"/>
         <result column="username" property="username"/>
         <result column="nickname" property="nickname"/>
@@ -76,14 +76,14 @@
         WHERE id = #{userId} and id != 10001
     </update>
 
-    <resultMap id="roleMap" type="com.heeexy.example.util.model.One2Many">
+    <resultMap id="roleMap" type="com.timemanual.util.model.One2Many">
         <id column="roleId" property="roleId"/>
         <result column="roleName" property="roleName"/>
         <collection property="users" ofType="com.alibaba.fastjson.JSONObject">
             <id column="userId" property="userId"/>
             <result column="nickname" property="nickname"/>
         </collection>
-        <collection property="menus" ofType="com.heeexy.example.util.model.One2Many">
+        <collection property="menus" ofType="com.timemanual.util.model.One2Many">
             <id column="menuCode" property="menuCode"/>
             <result column="menuName" property="menuName"/>
             <collection property="permissions" ofType="com.alibaba.fastjson.JSONObject">
@@ -111,7 +111,7 @@
         ORDER BY r.id, p.id
     </select>
 
-    <resultMap id="permissionMap" type="com.heeexy.example.util.model.One2Many">
+    <resultMap id="permissionMap" type="com.timemanual.util.model.One2Many">
         <id column="menuName" property="menuName"/>
         <collection property="permissions" ofType="com.alibaba.fastjson.JSONObject">
             <id column="id" property="id"/>
@@ -143,7 +143,7 @@
         </foreach>
     </insert>
 
-    <resultMap id="aRole" type="com.heeexy.example.util.model.One2Many">
+    <resultMap id="aRole" type="com.timemanual.util.model.One2Many">
         <id column="roleId" property="roleId"/>
         <result column="roleName" property="roleName"/>
         <collection property="users" ofType="com.alibaba.fastjson.JSONObject">

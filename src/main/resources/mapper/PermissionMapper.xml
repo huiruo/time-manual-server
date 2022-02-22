@@ -4,7 +4,7 @@
 <mapper namespace="com.timemanual.dao.PermissionDao">
 
 
-    <resultMap id="permissionMap" type="com.heeexy.example.util.model.One2Many">
+    <resultMap id="permissionMap" type="com.timemanual.util.model.One2Many">
         <id column="userId" property="userId"/>
         <result column="nickname" property="nickname"/>
         <result column="roleId" property="roleId"/>
