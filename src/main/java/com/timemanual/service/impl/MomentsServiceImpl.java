@@ -23,31 +23,19 @@ public class MomentsServiceImpl  extends ServiceImpl<MomentsDao, Moments> implem
 
     @Override
     public PaginationVo queryMoments(Integer currentPage, Integer pageSize) {
-        /*
-        如果没有添加分页插件，selectPage方法也可以代用。
-        但是会把数据数据全部返回。getPage和getTotal获取到总页数和总记录数的值都是0。
-        IPage<Moments> page = new Page<>(currentPage, pageSize);
-        MomentsVo momentsVo = new MomentsVo();
-        IPage<Moments> iPage = momentsDao.selectPage(page,null);
-
-        momentsVo.setCurrent(currentPage);
-        momentsVo.setSize(pageSize);
-        System.out.println("总页数： "+iPage.getPages());
-        System.out.println("总页数： "+iPage.getTotal());
-        momentsVo.setTotal(iPage.getTotal());
-        momentsVo.setMomentsList(iPage.getRecords());
-        */
-        Page page = new Page(currentPage, pageSize);
         PaginationVo paginationVo = new PaginationVo<>();
-        // 不指定排序
-        // IPage<Moments> iPage = momentsDao.selectPage(page, new QueryWrapper<Moments>());
+        paginationVo.setCurrent(currentPage);
+        paginationVo.setSize(pageSize);
 
         QueryWrapper<Moments> queryWrapper = new QueryWrapper<>();
         queryWrapper.orderByDesc("created_time");
-        IPage<Moments> iPage = momentsDao.selectPage(page, queryWrapper);
 
-        paginationVo.setCurrent(currentPage);
-        paginationVo.setSize(pageSize);
+        // 指定排序
+        Page page = new Page(currentPage, pageSize);
+        IPage<Moments> iPage = momentsDao.selectPage(page, queryWrapper);
+        // 不指定排序
+        // IPage<Moments> iPage = momentsDao.selectPage(page, new QueryWrapper<Moments>());
+
         paginationVo.setTotal(iPage.getTotal());
         paginationVo.setData(iPage.getRecords());
 
