@@ -2,7 +2,11 @@ package com.timemanual.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.timemanual.service.LoginService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Service
+@Transactional
 public class LoginServiceImpl implements LoginService {
     @Override
     public JSONObject authLogin(JSONObject jsonObject) {
