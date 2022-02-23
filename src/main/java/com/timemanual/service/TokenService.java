@@ -11,17 +11,7 @@ public interface TokenService {
    SessionUserInfo getUserInfo();
 
    /**
-    * 根据token查询用户信息
-    * 如果token无效,会抛未登录的异常
-    */
-//   SessionUserInfo getUserInfoFromCache(String token);
-
-//   void setCache(String token);
-
-   /**
     * 退出登录时,将token置为无效
     */
-   void invalidateToken(String token);
-
-//   SessionUserInfo getUserInfoByUsername(String username);
+   void invalidateToken();
 }

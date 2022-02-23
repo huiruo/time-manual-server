@@ -1,26 +1,56 @@
 package com.timemanual.service.impl;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.timemanual.config.exception.CommonJsonException;
+import com.timemanual.dao.Login2Dao;
 import com.timemanual.dto.SessionUserInfo;
 import com.timemanual.service.TokenService;
+import com.timemanual.util.StringTools;
+import com.timemanual.util.constants.ErrorEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @Slf4j
 public class TokenServiceImpl implements TokenService {
+    @Autowired
+    Cache<String, SessionUserInfo> cacheMap;
+
+    @Autowired
+    Login2Dao login2Dao;
+
+    /**
+     * 用户登录验证通过后(sso/帐密),生成token,记录用户已登录的状态
+     */
     @Override
     public String generateToken(String username) {
-        return null;
+        MDC.put("username", username);
+        String token = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
+        //设置用户信息缓存
+        setCache(token, username);
+        return token;
     }
 
     @Override
     public SessionUserInfo getUserInfo() {
-        return null;
+        String token = MDC.get("token");
+        return getUserInfoFromCache(token);
     }
 
+    /**
+     * 退出登录时,将token置为无效
+     */
     @Override
-    public void invalidateToken(String token) {
-
+    public void invalidateToken() {
+        String token = MDC.get("token");
+        if (!StringTools.isNullOrEmpty(token)) {
+            cacheMap.invalidate(token);
+        }
+        log.debug("退出登录,清除缓存:token={}", token);
     }
 
     /**
@@ -48,11 +78,16 @@ public class TokenServiceImpl implements TokenService {
     }
 
     private SessionUserInfo getUserInfoByUsername(String username) {
-        SessionUserInfo userInfo = loginDao.getUserInfo(username);
-        if (userInfo.getRoleIds().contains(1)) {
+        log.info("1------->");
+        log.info(username);
+        SessionUserInfo userInfo = login2Dao.getUserInfo(username);
+        log.info("2------->");
+        log.info(String.valueOf(userInfo));
+//        if (userInfo.getRoleIds().contains(1)) {
+        if (userInfo.getRoleId()==1) {
             //管理员,查出全部按钮和权限码
-            userInfo.setMenuList(loginDao.getAllMenu());
-            userInfo.setPermissionList(loginDao.getAllPermissionCode());
+            userInfo.setMenuList(login2Dao.getAllMenu());
+            userInfo.setPermissionList(login2Dao.getAllPermissionCode());
         }
         return userInfo;
     }

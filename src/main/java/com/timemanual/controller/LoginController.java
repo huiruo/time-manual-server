@@ -1,6 +1,7 @@
 package com.timemanual.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.timemanual.service.Login2Service;
 import com.timemanual.service.LoginService;
 import com.timemanual.util.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,8 @@ public class LoginController {
 
     @Autowired
     private LoginService loginService;
+    @Autowired
+    private Login2Service login2Service;
 
     /**
      * 登录
@@ -25,7 +28,10 @@ public class LoginController {
     public JSONObject authLogin(@RequestBody JSONObject requestJson) {
         log.debug("router-auth",requestJson);
         CommonUtil.hasAllRequired(requestJson, "username,password");
-        return loginService.authLogin(requestJson);
+        // test start
+        return login2Service.authLogin2(requestJson);
+        // test end
+        // return loginService.authLogin(requestJson);
     }
 
     /**
