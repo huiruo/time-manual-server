@@ -28,6 +28,7 @@ public class TokenServiceImpl implements TokenService {
      */
     @Override
     public String generateToken(String username) {
+        log.debug("1.generateToken");
         MDC.put("username", username);
         String token = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
         //设置用户信息缓存
@@ -61,7 +62,7 @@ public class TokenServiceImpl implements TokenService {
         if (StringTools.isNullOrEmpty(token)) {
             throw new CommonJsonException(ErrorEnum.E_20011);
         }
-        log.debug("根据token从缓存中查询用户信息,{}", token);
+        log.debug("2.根据token从缓存中查询用户信息,{}", token);
         SessionUserInfo info = cacheMap.getIfPresent(token);
         if (info == null) {
             log.info("没拿到缓存 token={}", token);
@@ -70,7 +71,6 @@ public class TokenServiceImpl implements TokenService {
         return info;
     }
 
-
     private void setCache(String token, String username) {
         SessionUserInfo info = getUserInfoByUsername(username);
         log.info("设置用户信息缓存:token={} , username={}, info={}", token, username, info);
@@ -78,12 +78,16 @@ public class TokenServiceImpl implements TokenService {
     }
 
     private SessionUserInfo getUserInfoByUsername(String username) {
-        log.info("1------->");
+
+        log.info("1.getUserInfoByUsername------->");
         log.info(username);
+
         SessionUserInfo userInfo = login2Dao.getUserInfo(username);
-        log.info("2------->");
+
+        log.info("2.getUserInfoByUsername------->");
         log.info(String.valueOf(userInfo));
-//        if (userInfo.getRoleIds().contains(1)) {
+
+        // if (userInfo.getRoleIds().contains(1)) {
         if (userInfo.getRoleId()==1) {
             //管理员,查出全部按钮和权限码
             userInfo.setMenuList(login2Dao.getAllMenu());

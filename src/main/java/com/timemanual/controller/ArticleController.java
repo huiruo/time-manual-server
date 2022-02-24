@@ -6,8 +6,8 @@ import com.timemanual.service.ArticleService;
 import com.timemanual.vo.PaginationVo;
 import com.timemanual.vo.PageParamVo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +21,7 @@ public class ArticleController {
     @Autowired
     ArticleService articleService;
 
+    @RequiresPermissions("article:list")
     @RequestMapping("/query")
     public ReqVo<PaginationVo> queryArticle(@RequestBody PageParamVo pageParamVo){
 

@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.timemanual.service.Login2Service;
 import com.timemanual.service.LoginService;
 import com.timemanual.util.CommonUtil;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/login")
-@Slf4j
 public class LoginController {
 
     @Autowired
@@ -26,12 +24,12 @@ public class LoginController {
      */
     @PostMapping("/auth")
     public JSONObject authLogin(@RequestBody JSONObject requestJson) {
-        System.out.println("test---->");
+        System.out.println("test---->"+requestJson.toJSONString());
         CommonUtil.hasAllRequired(requestJson, "username,password");
         // test start
-        return login2Service.authLogin2(requestJson);
+//        return login2Service.authLogin2(requestJson);
         // test end
-        // return loginService.authLogin(requestJson);
+        return loginService.authLogin(requestJson);
     }
 
     /**

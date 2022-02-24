@@ -1,5 +1,6 @@
 package com.timemanual.config.shiro;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
@@ -19,12 +20,16 @@ import java.util.Map;
 * shiro配置类
 * */
 @Configuration
+@Slf4j
 public class ShiroConfiguration {
     /**
      * Shiro的Web过滤器Factory 命名:shiroFilter
      */
     @Bean(name = "shiroFilter")
     public ShiroFilterFactoryBean shiroFilterFactoryBean(SecurityManager securityManager) {
+
+        log.debug("shiroFilterFactoryBean----->");
+
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         //Shiro的核心安全接口,这个属性是必须的
         shiroFilterFactoryBean.setSecurityManager(securityManager);
@@ -54,6 +59,9 @@ public class ShiroConfiguration {
      */
     @Bean
     public SecurityManager securityManager() {
+
+        log.debug("securityManager----->");
+
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setRealm(userRealm());
         return securityManager;
@@ -64,6 +72,9 @@ public class ShiroConfiguration {
      */
     @Bean
     public UserRealm userRealm() {
+
+        log.debug("userRealm----->");
+
         UserRealm userRealm = new UserRealm();
         return userRealm;
     }
@@ -77,6 +88,9 @@ public class ShiroConfiguration {
      */
     @Bean(name = "credentialsMatcher")
     public HashedCredentialsMatcher hashedCredentialsMatcher() {
+
+        log.debug("hashedCredentialsMatcher----->");
+
         HashedCredentialsMatcher hashedCredentialsMatcher = new HashedCredentialsMatcher();
         //散列算法:这里使用MD5算法;
         hashedCredentialsMatcher.setHashAlgorithmName("md5");
@@ -102,6 +116,9 @@ public class ShiroConfiguration {
     @Bean
     @DependsOn({"lifecycleBeanPostProcessor"})
     public DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator() {
+
+        log.debug("advisorAutoProxyCreator----->");
+
         DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator = new DefaultAdvisorAutoProxyCreator();
         advisorAutoProxyCreator.setProxyTargetClass(true);
         return advisorAutoProxyCreator;
@@ -109,6 +126,9 @@ public class ShiroConfiguration {
 
     @Bean
     public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor() {
+
+        log.debug("authorizationAttributeSourceAdvisor----->");
+
         AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor = new AuthorizationAttributeSourceAdvisor();
         authorizationAttributeSourceAdvisor.setSecurityManager(securityManager());
         return authorizationAttributeSourceAdvisor;

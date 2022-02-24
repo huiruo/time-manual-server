@@ -3,6 +3,7 @@ package com.timemanual.config.shiro;
 import com.alibaba.fastjson.JSONObject;
 import com.timemanual.service.LoginService;
 import com.timemanual.util.constants.Constants;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
@@ -19,15 +20,22 @@ import java.util.Collection;
 /*
 * 自定义Realm
 * */
+@Slf4j
 public class UserRealm extends AuthorizingRealm {
     private Logger logger = LoggerFactory.getLogger(UserRealm.class);
 
     @Autowired
     private LoginService loginService;
 
+    /*
+    *  当前登录用户授权
+    * */
     @Override
     @SuppressWarnings("unchecked")
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+
+        log.debug("doGetAuthorizationInfo--->当前登录用户授权");
+
         Session session = SecurityUtils.getSubject().getSession();
         //查询用户的权限
         JSONObject permission = (JSONObject) session.getAttribute(Constants.SESSION_USER_PERMISSION);
@@ -39,12 +47,17 @@ public class UserRealm extends AuthorizingRealm {
         return authorizationInfo;
     }
 
-    /**
+    /** 进行用户验证
      * 验证当前登录的Subject
      * LoginController.login()方法中执行Subject.login()时 执行此方法
+     * 主要内容是根据提交的用户名与密码到数据库进行匹配，如果匹配到了就返回一个AuthenticationInfo对象否则返回null，
+     * 同样shiro会帮我们进行判断当返回null的时候会抛出一个异常，开发者可根据该异常进行相应的逻辑处理
      */
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authcToken) throws AuthenticationException {
+
+        log.debug("doGetAuthenticationInfo--->进行用户登陆验证");
+
         String loginName = (String) authcToken.getPrincipal();
         // 获取用户密码
         String password = new String((char[]) authcToken.getCredentials());

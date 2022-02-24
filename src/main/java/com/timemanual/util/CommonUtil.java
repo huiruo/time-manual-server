@@ -28,7 +28,7 @@ public class CommonUtil {
         JSONObject resultJson = new JSONObject();
         resultJson.put("code", Constants.SUCCESS_CODE);
         resultJson.put("msg", Constants.SUCCESS_MSG);
-        resultJson.put("info", info);
+        resultJson.put("result", info);
         return resultJson;
     }
 
@@ -39,7 +39,7 @@ public class CommonUtil {
         JSONObject resultJson = new JSONObject();
         resultJson.put("code", errorEnum.getErrorCode());
         resultJson.put("msg", errorEnum.getErrorMsg());
-        resultJson.put("info", new JSONObject());
+        resultJson.put("result", new JSONObject());
         return resultJson;
     }
 
