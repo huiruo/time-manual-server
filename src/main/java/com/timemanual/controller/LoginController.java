@@ -26,7 +26,7 @@ public class LoginController {
      */
     @PostMapping("/auth")
     public JSONObject authLogin(@RequestBody JSONObject requestJson) {
-        log.debug("router-auth",requestJson);
+        System.out.println("test---->");
         CommonUtil.hasAllRequired(requestJson, "username,password");
         // test start
         return login2Service.authLogin2(requestJson);

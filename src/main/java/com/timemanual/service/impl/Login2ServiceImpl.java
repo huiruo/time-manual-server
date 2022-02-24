@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-@Slf4j
 public class Login2ServiceImpl implements Login2Service {
 
     @Autowired
@@ -31,8 +30,8 @@ public class Login2ServiceImpl implements Login2Service {
         String password = jsonObject.getString("password");
         JSONObject info = new JSONObject();
         JSONObject user = login2Dao.checkUser(username, password);
-        log.info("user----->");
-        log.info("user:"+String.valueOf(user));
+        System.out.println("user----->");
+        System.out.println("user:"+String.valueOf(user));
         if (user == null) {
             throw new CommonJsonException(ErrorEnum.E_10010);
         }
@@ -47,8 +46,8 @@ public class Login2ServiceImpl implements Login2Service {
     @Override
     public JSONObject getInfo() {
         //从session获取用户信息
+        System.out.println("从session获取用户信息----->");
         SessionUserInfo userInfo = tokenService.getUserInfo();
-        log.info(userInfo.toString());
         return CommonUtil.successJson(userInfo);
     }
 
