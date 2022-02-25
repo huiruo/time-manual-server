@@ -24,10 +24,11 @@ public class Login2ServiceImpl implements Login2Service {
      * 登录表单提交2
      */
     @Override
-    public JSONObject authLogin2(JSONObject jsonObject) {
+    //public JSONObject authLogin2(JSONObject jsonObject) {
+    public JSONObject authLogin2(String username,String password) {
         System.out.println("登录表单提交2----->");
-        String username = jsonObject.getString("username");
-        String password = jsonObject.getString("password");
+//        String username = jsonObject.getString("username");
+//        String password = jsonObject.getString("password");
         JSONObject info = new JSONObject();
         JSONObject user = login2Dao.checkUser(username, password);
         System.out.println("user----->");

@@ -1,6 +1,7 @@
 package com.timemanual.config.shiro;
 
 import com.alibaba.fastjson.JSONObject;
+import com.timemanual.service.Login2Service;
 import com.timemanual.service.LoginService;
 import com.timemanual.util.constants.Constants;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,9 @@ public class UserRealm extends AuthorizingRealm {
 
     @Autowired
     private LoginService loginService;
+
+    @Autowired
+    private Login2Service login2Service;
 
     /*
     *  当前登录用户授权
@@ -62,7 +66,15 @@ public class UserRealm extends AuthorizingRealm {
         // 获取用户密码
         String password = new String((char[]) authcToken.getCredentials());
         JSONObject user = loginService.getUser(loginName, password);
+
+        log.debug("doGetAuthenticationInfo--->2:{}",loginName);
+        log.debug("doGetAuthenticationInfo--->2:{}",password);
+
+        login2Service.authLogin2(loginName,password);
+
+        log.debug("doGetAuthenticationInfo--->3:{}",user);
         if (user == null) {
+            log.debug("doGetAuthenticationInfo--->3:{}","没找到帐号");
             //没找到帐号
             throw new UnknownAccountException();
         }

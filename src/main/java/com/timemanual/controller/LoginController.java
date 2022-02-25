@@ -26,8 +26,10 @@ public class LoginController {
     public JSONObject authLogin(@RequestBody JSONObject requestJson) {
         System.out.println("test---->"+requestJson.toJSONString());
         CommonUtil.hasAllRequired(requestJson, "username,password");
+        String username = requestJson.getString("username");
+        String password = requestJson.getString("password");
         // test start
-//        return login2Service.authLogin2(requestJson);
+//         return login2Service.authLogin2(username,password);
         // test end
         return loginService.authLogin(requestJson);
     }

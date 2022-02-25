@@ -6,7 +6,8 @@ public interface Login2Service {
     /**
      * 登录表单提交
      */
-    JSONObject authLogin2(JSONObject jsonObject);
+//    JSONObject authLogin2(JSONObject jsonObject);
+    JSONObject authLogin2(String username,String password);
 
     /**
      * 查询当前登录用户的权限等信息
