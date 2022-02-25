@@ -1,9 +1,11 @@
 package com.timemanual.config.shiro;
 
 import com.alibaba.fastjson.JSONObject;
+import com.timemanual.config.exception.CommonJsonException;
 import com.timemanual.service.Login2Service;
 import com.timemanual.service.LoginService;
 import com.timemanual.util.constants.Constants;
+import com.timemanual.util.constants.ErrorEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
@@ -65,18 +67,21 @@ public class UserRealm extends AuthorizingRealm {
         String loginName = (String) authcToken.getPrincipal();
         // 获取用户密码
         String password = new String((char[]) authcToken.getCredentials());
-        JSONObject user = loginService.getUser(loginName, password);
+        JSONObject user = loginService.checkUser(loginName);
 
         log.debug("doGetAuthenticationInfo--->2:{}",loginName);
         log.debug("doGetAuthenticationInfo--->2:{}",password);
-
-        login2Service.authLogin2(loginName,password);
-
         log.debug("doGetAuthenticationInfo--->3:{}",user);
+
+        // test
+        // login2Service.authLogin2(loginName,password);
+        // test end
+
+
         if (user == null) {
             log.debug("doGetAuthenticationInfo--->3:{}","没找到帐号");
             //没找到帐号
-            throw new UnknownAccountException();
+             throw new UnknownAccountException();
         }
         //交给AuthenticatingRealm使用CredentialsMatcher进行密码匹配，如果觉得人家的不好可以自定义实现
         SimpleAuthenticationInfo authenticationInfo = new SimpleAuthenticationInfo(

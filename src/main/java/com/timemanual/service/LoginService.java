@@ -16,6 +16,8 @@ public interface LoginService {
      */
     JSONObject getUser(String username, String password);
 
+    JSONObject checkUser(String username);
+
     /**
      * 查询当前登录用户的权限等信息
      */

@@ -60,6 +60,14 @@ public class LoginServiceImpl implements LoginService {
     }
 
     /**
+     * 用户名是否存在
+     */
+    @Override
+    public JSONObject checkUser(String username) {
+        return loginDao.checkUser(username);
+    }
+
+    /**
      * 查询当前登录用户的权限等信息
      */
     @Override

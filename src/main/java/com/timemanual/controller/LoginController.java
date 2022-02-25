@@ -2,6 +2,7 @@ package com.timemanual.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.timemanual.service.Login2Service;
+import com.timemanual.service.Login3Service;
 import com.timemanual.service.LoginService;
 import com.timemanual.util.CommonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,9 @@ public class LoginController {
     @Autowired
     private Login2Service login2Service;
 
+    @Autowired
+    private Login3Service login3Service;
+
     /**
      * 登录
      */
@@ -29,9 +33,11 @@ public class LoginController {
         String username = requestJson.getString("username");
         String password = requestJson.getString("password");
         // test start
-//         return login2Service.authLogin2(username,password);
+        // return login2Service.authLogin2(username,password);
+
+        return login3Service.authLogin3(username,password);
         // test end
-        return loginService.authLogin(requestJson);
+        // return loginService.authLogin(requestJson);
     }
 
     /**

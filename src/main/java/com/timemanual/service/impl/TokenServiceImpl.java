@@ -28,10 +28,10 @@ public class TokenServiceImpl implements TokenService {
      */
     @Override
     public String generateToken(String username) {
-        log.debug("1.generateToken");
         MDC.put("username", username);
         String token = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
         //设置用户信息缓存
+        log.debug("1.generateToken:{}",token);
         setCache(token, username);
         return token;
     }
