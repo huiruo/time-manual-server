@@ -13,7 +13,8 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SysUser {
-    private Integer id;
+//    private Integer id;
+    private Integer userId;
     private String username;
     private String password;
     private String nickname;

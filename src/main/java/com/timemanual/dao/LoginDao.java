@@ -1,6 +1,7 @@
 package com.timemanual.dao;
 
 import com.alibaba.fastjson.JSONObject;
+import com.timemanual.entity.SysUser;
 import org.apache.ibatis.annotations.Param;
 
 public interface LoginDao {
@@ -20,4 +21,6 @@ public interface LoginDao {
     JSONObject getUser(@Param("username") String username, @Param("password") String password);
 
     JSONObject checkUser(@Param("username") String username);
+
+    SysUser checkLoginUser(@Param("username") String username);
 }

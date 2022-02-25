@@ -27,4 +27,16 @@
           AND u.password = #{password}
           AND u.delete_status = '1'
     </select>
+
+    <select id="checkLoginUser" resultType="com.timemanual.entity.SysUser">
+        SELECT
+            u.id       userId,
+            u.username username,
+            u.password password,
+            u.nickname nickName
+        FROM
+            sys_user u
+        WHERE u.username = #{username}
+          AND u.delete_status = '1'
+    </select>
 </mapper>

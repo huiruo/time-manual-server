@@ -1,6 +1,7 @@
 package com.timemanual.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.timemanual.entity.SysUser;
 
 public interface LoginService {
     /**
@@ -10,13 +11,13 @@ public interface LoginService {
 
     /**
      * 根据用户名和密码查询对应的用户
-     *
-     * @param username 用户名
-     * @param password 密码
      */
-    JSONObject getUser(String username, String password);
+    // JSONObject getUser(String username, String password);
 
+//    JSONObject checkUser(String username);
     JSONObject checkUser(String username);
+
+    SysUser checkLoginUser(String username);
 
     /**
      * 查询当前登录用户的权限等信息

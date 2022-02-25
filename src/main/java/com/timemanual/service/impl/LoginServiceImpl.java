@@ -2,6 +2,7 @@ package com.timemanual.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.timemanual.dao.LoginDao;
+import com.timemanual.entity.SysUser;
 import com.timemanual.service.LoginService;
 import com.timemanual.service.PermissionService;
 import com.timemanual.util.CommonUtil;
@@ -54,10 +55,12 @@ public class LoginServiceImpl implements LoginService {
     /**
      * 根据用户名和密码查询对应的用户
      */
+    /*
     @Override
     public JSONObject getUser(String username, String password) {
         return loginDao.getUser(username, password);
     }
+    */
 
     /**
      * 用户名是否存在
@@ -65,6 +68,11 @@ public class LoginServiceImpl implements LoginService {
     @Override
     public JSONObject checkUser(String username) {
         return loginDao.checkUser(username);
+    }
+
+    @Override
+    public SysUser checkLoginUser(String username) {
+        return loginDao.checkLoginUser(username);
     }
 
     /**

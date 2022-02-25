@@ -21,7 +21,7 @@ public class ArticleController {
     @Autowired
     ArticleService articleService;
 
-    @RequiresPermissions("article:list")
+//    @RequiresPermissions("article:list")
     @RequestMapping("/query")
     public ReqVo<PaginationVo> queryArticle(@RequestBody PageParamVo pageParamVo){
 

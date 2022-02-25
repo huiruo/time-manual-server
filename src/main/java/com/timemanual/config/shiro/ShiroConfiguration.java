@@ -1,5 +1,6 @@
 package com.timemanual.config.shiro;
 
+import com.timemanual.config.jwt.JWTFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.mgt.SecurityManager;
@@ -28,14 +29,17 @@ public class ShiroConfiguration {
     @Bean(name = "shiroFilter")
     public ShiroFilterFactoryBean shiroFilterFactoryBean(SecurityManager securityManager) {
 
-        log.debug("shiroFilterFactoryBean----->");
+        log.debug("init-shiroFilterFactoryBean----->");
 
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         //Shiro的核心安全接口,这个属性是必须的
         shiroFilterFactoryBean.setSecurityManager(securityManager);
         Map<String, Filter> filterMap = new LinkedHashMap<>();
-        filterMap.put("authc", new AjaxPermissionsAuthorizationFilter());
+
+//        filterMap.put("authc", new AjaxPermissionsAuthorizationFilter());
+        filterMap.put("jwt", new JWTFilter());
         shiroFilterFactoryBean.setFilters(filterMap);
+
         /*定义shiro过滤链  Map结构
          * Map中key(xml中是指value值)的第一个'/'代表的路径是相对于HttpServletRequest.getContextPath()的值来的
          * anon：它对应的过滤器里面是空的,什么都没做,这里.do和.jsp后面的*表示参数,比方说login.jsp?main这种
@@ -60,7 +64,7 @@ public class ShiroConfiguration {
     @Bean
     public SecurityManager securityManager() {
 
-        log.debug("securityManager----->");
+        log.debug("init-securityManager----->");
 
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setRealm(userRealm());
@@ -73,7 +77,7 @@ public class ShiroConfiguration {
     @Bean
     public UserRealm userRealm() {
 
-        log.debug("userRealm----->");
+        log.debug("init-userRealm----->");
 
         UserRealm userRealm = new UserRealm();
         return userRealm;
@@ -89,7 +93,7 @@ public class ShiroConfiguration {
     @Bean(name = "credentialsMatcher")
     public HashedCredentialsMatcher hashedCredentialsMatcher() {
 
-        log.debug("hashedCredentialsMatcher----->");
+        log.debug("init-hashedCredentialsMatcher----->");
 
         HashedCredentialsMatcher hashedCredentialsMatcher = new HashedCredentialsMatcher();
         //散列算法:这里使用MD5算法;
@@ -117,7 +121,7 @@ public class ShiroConfiguration {
     @DependsOn({"lifecycleBeanPostProcessor"})
     public DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator() {
 
-        log.debug("advisorAutoProxyCreator----->");
+        log.debug("init-advisorAutoProxyCreator----->");
 
         DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator = new DefaultAdvisorAutoProxyCreator();
         advisorAutoProxyCreator.setProxyTargetClass(true);
@@ -127,7 +131,7 @@ public class ShiroConfiguration {
     @Bean
     public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor() {
 
-        log.debug("authorizationAttributeSourceAdvisor----->");
+        log.debug("init-authorizationAttributeSourceAdvisor----->");
 
         AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor = new AuthorizationAttributeSourceAdvisor();
         authorizationAttributeSourceAdvisor.setSecurityManager(securityManager());
