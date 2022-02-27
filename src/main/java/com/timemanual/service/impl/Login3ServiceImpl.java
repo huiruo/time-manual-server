@@ -2,7 +2,6 @@ package com.timemanual.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.benmanes.caffeine.cache.Cache;
-import com.timemanual.config.jwt.JWTToken;
 import com.timemanual.config.shiro.ShiroAuthToken;
 import com.timemanual.dto.SessionUserInfo;
 import com.timemanual.entity.SysUser;
@@ -10,7 +9,7 @@ import com.timemanual.service.Login3Service;
 import com.timemanual.service.LoginService;
 import com.timemanual.service.TokenService;
 import com.timemanual.util.CommonUtil;
-import com.timemanual.util.JWTUtil;
+import com.timemanual.config.jwt.JWTUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.IncorrectCredentialsException;
@@ -68,6 +67,18 @@ public class Login3ServiceImpl implements Login3Service {
 
         log.debug("login:{}",user);
         log.debug("login2:{}",userJson);
+        if(user != null){
+            if (user.getPassword().equals(password)) {
+                String generateToken = JWTUtil.sign(username, password);
+                info.put("token", generateToken);
+//                info.put("result", info);
+                info.put("msg", "登录成功");
+            } else {
+                info.put("msg", "密码有误");
+            }
+        }else {
+            info.put("msg", "账户不存在");
+        }
 
         return CommonUtil.successJson(info);
     }

@@ -1,4 +1,4 @@
-package com.timemanual.util;
+package com.timemanual.config.jwt;
 
 import java.util.Date;
 
@@ -10,7 +10,9 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 
 public class JWTUtil {
     // 5 分钟后过期
-    private static final long EXPIRE_TIME = 5 * 60 * 1000;
+//    private static final long EXPIRE_TIME = 5 * 60 * 1000;
+
+    private static final long EXPIRE_TIME = 60 * 1000;
 
     /**
      * 验证 token 是否正确
