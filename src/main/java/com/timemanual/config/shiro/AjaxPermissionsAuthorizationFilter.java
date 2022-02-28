@@ -47,7 +47,7 @@ public class AjaxPermissionsAuthorizationFilter extends FormAuthenticationFilter
                 out.close();
             }
         }
-        return false;
+        return true;
     }
 
     @Bean

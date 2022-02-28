@@ -1,10 +1,8 @@
 package com.timemanual.config.shiro;
 
 import com.alibaba.fastjson.JSONObject;
-import com.timemanual.config.jwt.JWTToken;
-import com.timemanual.config.jwt.JWTUtil;
-import com.timemanual.config.jwt.JwtToken2;
-import com.timemanual.config.jwt.JwtUtil2;
+import com.timemanual.config.jwt.JwtToken;
+import com.timemanual.config.jwt.JwtUtil;
 import com.timemanual.entity.SysUser;
 import com.timemanual.service.LoginService;
 import com.timemanual.util.constants.Constants;
@@ -48,7 +46,7 @@ public class UserRealm extends AuthorizingRealm {
 
     @Override
     public boolean supports(AuthenticationToken token) {
-        return token instanceof JwtToken2;
+        return token instanceof JwtToken;
     }
 
     /*
@@ -87,7 +85,7 @@ public class UserRealm extends AuthorizingRealm {
 
         // 解密获得username，用于和数据库进行对比
 //        String username = JWTUtil.getUsername(token);
-        String username = JwtUtil2.getUsername(token);
+        String username = JwtUtil.getUsername(token);
         logger.debug("doGetAuthenticationInfo 1:{}",token);
         logger.debug("doGetAuthenticationInfo 2:{}",username);
 
@@ -105,7 +103,7 @@ public class UserRealm extends AuthorizingRealm {
             throw new AuthenticationException("User didn't existed!");
         }
 
-        if (!JWTUtil.verify(token, username, user.getPassword())) {
+        if (!JwtUtil.verify(token, username, user.getPassword())) {
             logger.debug("doGetAuthenticationInfo 4:{}","Username or password error");
             throw new AuthenticationException("Username or password error");
         }else {

@@ -10,11 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Date;
 
 @Slf4j
-public class JwtUtil2 {
+public class JwtUtil {
     /**
      * 过期时间30分钟
      */
-    public static final long EXPIRE_TIME = 30 * 60 * 1000;
+//    public static final long EXPIRE_TIME = 30 * 60 * 1000;
+//    public static final long EXPIRE_TIME = 30 * 60 * 1000;
+    private static final long EXPIRE_TIME = 60 * 1000;
+
 
     /**
      * 校验token是否正确

@@ -2,8 +2,7 @@ package com.timemanual.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.benmanes.caffeine.cache.Cache;
-import com.timemanual.config.jwt.JWTToken;
-import com.timemanual.config.jwt.JwtUtil2;
+import com.timemanual.config.jwt.JwtUtil;
 import com.timemanual.config.shiro.ShiroAuthToken;
 import com.timemanual.dto.SessionUserInfo;
 import com.timemanual.entity.SysUser;
@@ -11,7 +10,6 @@ import com.timemanual.service.Login3Service;
 import com.timemanual.service.LoginService;
 import com.timemanual.service.TokenService;
 import com.timemanual.util.CommonUtil;
-import com.timemanual.config.jwt.JWTUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.IncorrectCredentialsException;
@@ -50,7 +48,7 @@ public class Login3ServiceImpl implements Login3Service {
             // log.debug("authLogin3-->3:{}",infoCacheMap);
             // test end
 
-            String generateToken = JWTUtil.sign(username, password);
+            String generateToken = JwtUtil.sign(username, password);
             info.put("token", generateToken);
         } catch (UnknownAccountException e) {
             info.put("msg", "用户名有误");
@@ -72,7 +70,7 @@ public class Login3ServiceImpl implements Login3Service {
         if(user != null){
             if (user.getPassword().equals(password)) {
                 // String generateToken = JWTUtil.sign(username, password);
-                String generateToken = JwtUtil2.sign(username, password);
+                String generateToken = JwtUtil.sign(username, password);
                 info.put("token", generateToken);
                 // info.put("result", info);
 

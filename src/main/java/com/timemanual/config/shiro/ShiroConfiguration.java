@@ -1,27 +1,19 @@
 package com.timemanual.config.shiro;
 
 import com.timemanual.config.jwt.JWTFilter;
-import com.timemanual.config.jwt.JWTFilter2;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
 import org.apache.shiro.mgt.DefaultSubjectDAO;
 import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.session.mgt.SessionManager;
-import org.apache.shiro.session.mgt.eis.MemorySessionDAO;
-import org.apache.shiro.session.mgt.eis.SessionDAO;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.apache.shiro.web.servlet.Cookie;
-import org.apache.shiro.web.servlet.ShiroHttpSession;
-import org.apache.shiro.web.servlet.SimpleCookie;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.web.server.session.DefaultWebSessionManager;
 
 import javax.servlet.Filter;
 import java.util.LinkedHashMap;
@@ -50,11 +42,11 @@ public class ShiroConfiguration {
         shiroFilterFactoryBean.setSecurityManager(securityManager);
         Map<String, Filter> filterMap = new LinkedHashMap<>();
 
-        // filterMap.put("authc", new AjaxPermissionsAuthorizationFilter());
         // filterMap.put("jwt", new JWTFilter());
-        filterMap.put("jwt", new JWTFilter2());
+        filterMap.put("jwt", new JWTFilter());
         shiroFilterFactoryBean.setFilters(filterMap);
 
+        // filterMap.put("authc", new AjaxPermissionsAuthorizationFilter());
         /*定义shiro过滤链  Map结构
          * Map中key(xml中是指value值)的第一个'/'代表的路径是相对于HttpServletRequest.getContextPath()的值来的
          * anon：它对应的过滤器里面是空的,什么都没做,这里.do和.jsp后面的*表示参数,比方说login.jsp?main这种
@@ -67,12 +59,15 @@ public class ShiroConfiguration {
         */
 
         // 设置无权限时跳转的 url;
-        shiroFilterFactoryBean.setUnauthorizedUrl("/unauthorized/无权限");
+        // shiroFilterFactoryBean.setUnauthorizedUrl("/unauthorized/无权限");
         // filterChainDefinitionMap.put("/", "anon");
         // filterChainDefinitionMap.put("/static/**", "anon");
         filterChainDefinitionMap.put("/login/auth", "anon");
         // filterChainDefinitionMap.put("/login/logout", "anon");
-        filterChainDefinitionMap.put("/user/**", "authc");
+
+        filterChainDefinitionMap.put("/user/**", "jwt");
+        // filterChainDefinitionMap.put("/user/**", "authc");
+
         // filterChainDefinitionMap.put("/app/**", "anon");
         // filterChainDefinitionMap.put("/error", "anon");
         filterChainDefinitionMap.put("/**", "jwt");
