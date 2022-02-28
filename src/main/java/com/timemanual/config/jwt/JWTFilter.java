@@ -1,6 +1,8 @@
 package com.timemanual.config.jwt;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -45,16 +47,14 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
 
-        log.debug("JWTFilter-isAccessAllowed 1---->");
         log.debug("JWTFilter-isAccessAllowed 2---->{}",request);
 
         if (isLoginAttempt(request, response)) {
-            log.debug("JWTFilter-isAccessAllowed 3---->");
             try {
-                log.debug("JWTFilter-isAccessAllowed 4---->");
+                log.debug("JWTFilter-isAccessAllowed 4---->{}","success");
                 executeLogin(request, response);
             } catch (Exception e) {
-                log.debug("JWTFilter-isAccessAllowed 5---->");
+                log.debug("JWTFilter-isAccessAllowed 5---->{}","response401");
                 response401(request, response);
             }
         }
@@ -89,11 +89,13 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
 
         // 这里需要自己实现对Token验证操作
         JWTToken token = new JWTToken(authorization);
-
         log.debug("JWTFilter-executeLogin 3---->{}",token);
-
         // 如果登陆失败会抛出异常(Token鉴权失败)
-        getSubject(request, response).login(token);
+         getSubject(request, response).login(token);
+//        Subject currentUser = SecurityUtils.getSubject();
+//        currentUser.login(token);
+
+        log.debug("JWTFilter-executeLogin 4---->{}","成功");
         return true;
     }
 
@@ -103,13 +105,13 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
     private void response401(ServletRequest req, ServletResponse resp) {
 
         log.debug("JWTFilter-response401 1---->");
-
+        /*
         try {
             HttpServletResponse httpServletResponse = (HttpServletResponse) resp;
             httpServletResponse.sendRedirect("/401");
         } catch (IOException e) {
-            log.error(e.getMessage());
+            log.debug("JWTFilter-response401 2---->{}",e.getMessage());
         }
+        */
     }
-
 }

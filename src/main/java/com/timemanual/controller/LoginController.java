@@ -34,9 +34,8 @@ public class LoginController {
         String password = requestJson.getString("password");
         // test start
         // return login2Service.authLogin2(username,password);
-
-        return login3Service.authLogin3(username,password);
-//        return login3Service.authLogin(username,password);
+        // return login3Service.authLogin3(username,password);
+        return login3Service.authLogin(username,password);
         // test end
         // return loginService.authLogin(requestJson);
     }

@@ -26,7 +26,7 @@ public class JWTToken implements AuthenticationToken {
     */
 //    */
     private static final long serialVersionUID = 2231225172429467901L;
-    // TOKEN
+
     private String token;
 
     public JWTToken(String token) {
@@ -42,5 +42,4 @@ public class JWTToken implements AuthenticationToken {
     public Object getPrincipal() {
         return token;
     }
-
 }

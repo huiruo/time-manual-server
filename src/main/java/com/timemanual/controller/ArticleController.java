@@ -22,14 +22,26 @@ public class ArticleController {
     @Autowired
     ArticleService articleService;
 
-//    @RequiresPermissions("article:list")
+    // @RequiresPermissions("article:list")
     @RequestMapping("/user/article/query")
-//    @RequestMapping("/article/query")
-//    @RequiresAuthentication
+    // @RequestMapping("/article/query")
+    // @RequiresAuthentication
     public ReqVo<PaginationVo> queryArticle(@RequestBody PageParamVo pageParamVo){
-
         PaginationVo paginationVo = articleService.queryArticle(pageParamVo.getCurrentPage(), pageParamVo.getPageSize());
         return new ReqVo<>(paginationVo);
+    }
+
+    //    @RequestMapping("/query/id")
+    // 不必带token也能请求到内容, 因为在shiro中配置了过滤规则
+    @RequestMapping("/user/article/query/id")
+    public ReqVo<Article> queryArticleByID(@RequestParam("id") String articleId){
+        try{
+            Article article = articleService.queryArticleById(articleId);
+            return new ReqVo<>(article);
+        }catch (Exception e){
+            System.out.println(e);
+            return new ReqVo<>(0, e.getMessage());
+        }
     }
 
     @RequestMapping("/article/add")
@@ -39,19 +51,6 @@ public class ArticleController {
             return new ReqVo<>(200, "发布文章成功");
         }else {
             return new ReqVo<>(0, "发布文章错误");
-        }
-    }
-
-//    @RequestMapping("/query/id")
-    // 不必带token也能请求到内容, 因为在shiro中配置了过滤规则
-    @RequestMapping("/article/query/id")
-    public ReqVo<Article> queryArticleByID(@RequestParam("id") String articleId){
-        try{
-            Article article = articleService.queryArticleById(articleId);
-            return new ReqVo<>(article);
-        }catch (Exception e){
-            System.out.println(e);
-            return new ReqVo<>(0, e.getMessage());
         }
     }
 

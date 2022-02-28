@@ -2,6 +2,8 @@ package com.timemanual.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.benmanes.caffeine.cache.Cache;
+import com.timemanual.config.jwt.JWTToken;
+import com.timemanual.config.jwt.JwtUtil2;
 import com.timemanual.config.shiro.ShiroAuthToken;
 import com.timemanual.dto.SessionUserInfo;
 import com.timemanual.entity.SysUser;
@@ -35,7 +37,7 @@ public class Login3ServiceImpl implements Login3Service {
     public JSONObject authLogin3(String username, String password) {
         JSONObject info = new JSONObject();
         Subject currentUser = SecurityUtils.getSubject();
-//        UsernamePasswordToken token = new UsernamePasswordToken(username, password);
+        // UsernamePasswordToken token = new UsernamePasswordToken(username, password);
         ShiroAuthToken token = new ShiroAuthToken(username, password);
         log.debug("authLogin3-->2,这个token包含很多用户信息:{}", token);
 
@@ -65,14 +67,21 @@ public class Login3ServiceImpl implements Login3Service {
         SysUser user = loginService.checkLoginUser(username);
         JSONObject userJson = loginService.checkUser(username);
 
-        log.debug("login:{}",user);
-        log.debug("login2:{}",userJson);
+        log.debug("login jwt:{}",user);
+        log.debug("login2 jwt:{}",userJson);
         if(user != null){
             if (user.getPassword().equals(password)) {
-                String generateToken = JWTUtil.sign(username, password);
+                // String generateToken = JWTUtil.sign(username, password);
+                String generateToken = JwtUtil2.sign(username, password);
                 info.put("token", generateToken);
-//                info.put("result", info);
+                // info.put("result", info);
+
+                // JWTToken token = new JWTToken(generateToken);
+                // Subject currentUser = SecurityUtils.getSubject();
+                // currentUser.login(token);
+
                 info.put("msg", "登录成功");
+
             } else {
                 info.put("msg", "密码有误");
             }

@@ -72,6 +72,7 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public SysUser checkLoginUser(String username) {
+        log.debug("========用户名是否存在==========");
         return loginDao.checkLoginUser(username);
     }
 
