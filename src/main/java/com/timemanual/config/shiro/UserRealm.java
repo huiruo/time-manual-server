@@ -3,6 +3,7 @@ package com.timemanual.config.shiro;
 import com.alibaba.fastjson.JSONObject;
 import com.timemanual.config.jwt.JWTToken;
 import com.timemanual.config.jwt.JWTUtil;
+import com.timemanual.entity.SysUser;
 import com.timemanual.service.Login2Service;
 import com.timemanual.service.LoginService;
 import com.timemanual.util.constants.Constants;
@@ -92,7 +93,7 @@ public class UserRealm extends AuthorizingRealm {
      * token的password不用传，在realm中对比的时候能够获取到token这个对象，那时候是可以获取到token中所有的信息的。另外这里还可以传salt这个参数
      * SimpleAuthenticationInfo info = new SimpleAuthenticationInfo(user, user.getString("password"), getName());
      * */
-//    /*
+    /*
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authToken) throws AuthenticationException {
 
@@ -158,9 +159,26 @@ public class UserRealm extends AuthorizingRealm {
         // 注意：最后的return simpleAuthenticationInfo 的时候就会触发password验证
         return info;
     }
-//    */
-//    @Override
-//    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken auth) {
-//        logger.info("====================Token认证====================");
-//    }
+    */
+    @Override
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken auth) {
+        logger.info("====================Token认证====================");
+        String token = (String) auth.getCredentials();
+        // 解密获得username，用于和数据库进行对比
+        String username = JWTUtil.getUsername(token);
+        if (username == null) {
+            throw new AuthenticationException("token invalid");
+        }
+        SysUser user = loginService.checkLoginUser(username);
+//        UserBean userBean = userService.getUser(username);
+        if (user == null) {
+            throw new AuthenticationException("User didn't existed!");
+        }
+
+        if (! JWTUtil.verify(token, username, user.getPassword())) {
+            throw new AuthenticationException("Username or password error");
+        }
+
+        return new SimpleAuthenticationInfo(token, token, getName());
+    }
 }
