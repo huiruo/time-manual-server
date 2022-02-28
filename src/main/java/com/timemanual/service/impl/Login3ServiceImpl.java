@@ -8,7 +8,6 @@ import com.timemanual.dto.SessionUserInfo;
 import com.timemanual.entity.SysUser;
 import com.timemanual.service.Login3Service;
 import com.timemanual.service.LoginService;
-import com.timemanual.service.TokenService;
 import com.timemanual.util.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -21,9 +20,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class Login3ServiceImpl implements Login3Service {
-    @Autowired
-    private TokenService tokenService;
-
     @Autowired
     private LoginService loginService;
 
