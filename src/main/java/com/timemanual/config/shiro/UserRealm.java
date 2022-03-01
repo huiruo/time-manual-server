@@ -72,8 +72,9 @@ public class UserRealm extends AuthorizingRealm {
         log.debug("doGetAuthenticationInfo 2:{}",username);
 
         if (username == null) {
-            log.debug("doGetAuthenticationInfo 2-1:");
-            throw new AuthenticationException("token invalid");
+            log.debug("doGetAuthenticationInfo 2-1:{}","token invalid");
+            // throw new AuthenticationException("token invalid");
+            return null;
         }
 
         SysUser user = loginService.checkLoginUser(username);
@@ -82,15 +83,17 @@ public class UserRealm extends AuthorizingRealm {
 
         if (user == null) {
             log.debug("doGetAuthenticationInfo 3-1:");
-            throw new AuthenticationException("User didn't existed!");
+            // throw new AuthenticationException("User didn't existed!");
+            return null;
         }
 
         if (!JwtUtil.verify(token, username, user.getPassword())) {
             log.debug("doGetAuthenticationInfo 4:{}","Username or password error");
-            throw new AuthenticationException("Username or password error");
-        }else {
-            log.debug("doGetAuthenticationInfo 4-2:{}","success");
+            return null;
+            // throw new RuntimeException("doGetAuthenticationInfo: Exception");
         }
+
+        log.debug("doGetAuthenticationInfo 4-2:{}","success");
 
         return new SimpleAuthenticationInfo(token, token, getName());
     }

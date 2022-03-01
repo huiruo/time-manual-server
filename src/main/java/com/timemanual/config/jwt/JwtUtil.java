@@ -4,6 +4,9 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.SignatureVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,12 +35,27 @@ public class JwtUtil {
             JWTVerifier verifier = JWT.require(algorithm).withClaim("username", username).build();
             // 效验TOKEN
             DecodedJWT jwt = verifier.verify(token);
-            log.info(jwt+":-token is valid");
+            log.debug("jwtUtil---verify success:{}");
             return true;
-        } catch (Exception e) {
-            log.info("The token is invalid{}",e.getMessage());
+        } catch (TokenExpiredException exception) {
+            log.debug("jwtUtil---verify 过期:{}",exception.getMessage());
+            // throw new RuntimeException("未查找到数据");
+            // throw new RuntimeException("verify:过期");
+            return false;
+        } catch (SignatureVerificationException exception) {
+            log.debug("jwtUtil---verify token错误:{}",exception.getMessage());
+            // throw new RuntimeException("verify:token错误");
+            return false;
+        } catch (JWTDecodeException exception) {
+            log.debug("jwtUtil---verify token解码错误:{}",exception.getMessage());
+            // throw new RuntimeException("verify:token解码错误");
+            return false;
+        } catch (JWTVerificationException exception) {
+            log.debug("jwtUtil---verify error 2:{}",exception.getMessage());
+            // throw new RuntimeException("verify:error 2");
             return false;
         }
+
     }
 
     /**

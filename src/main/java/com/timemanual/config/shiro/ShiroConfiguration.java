@@ -21,9 +21,6 @@ import org.springframework.context.annotation.DependsOn;
 import javax.servlet.Filter;
 import java.util.*;
 
-/*
-* shiro配置类
-* */
 @Configuration
 @Slf4j
 public class ShiroConfiguration {
@@ -54,10 +51,9 @@ public class ShiroConfiguration {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         // Shiro的核心安全接口,这个属性是必须的
         shiroFilterFactoryBean.setSecurityManager(securityManager);
-        // 设置无权限时跳转的 url;
-        // shiroFilterFactoryBean.setUnauthorizedUrl("/unauthorized/无权限");
         Map<String, Filter> filterMap = new HashMap<>(1);
         shiroFilterFactoryBean.setFilters(filterMap);
+        // filterMap.put("jwt", new AjaxPermissionsAuthorizationFilter());
         // filterMap.put("authc", new AjaxPermissionsAuthorizationFilter());
         filterMap.put("jwt", new JwtFilter());
 
@@ -78,7 +74,7 @@ public class ShiroConfiguration {
         // filterChainDefinitionMap.put("/error", "anon");
 
         filterChainDefinitionMap.put("/login/auth", "anon");
-        filterChainDefinitionMap.put("/user/**", "jwt");
+        // filterChainDefinitionMap.put("/user/**", "jwt");
         // 其余路径均拦截
         filterChainDefinitionMap.put("/**", "jwt");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);

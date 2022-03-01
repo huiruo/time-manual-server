@@ -1,12 +1,10 @@
 package com.timemanual.config.jwt;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.timemanual.util.constants.ErrorEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.util.AntPathMatcher;
 import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -18,123 +16,138 @@ import java.io.PrintWriter;
 
 @Slf4j
 public class JwtFilter extends BasicHttpAuthenticationFilter {
-    @Autowired
-    // private RedisUtil redisUtil;
-    private AntPathMatcher antPathMatcher =new AntPathMatcher();
-    /**
-     * 执行登录认证(判断请求头是否带上token)
-     * @param request
-     * @param response
-     * @param mappedValue
-     * @return
-     */
-    @Override
-    protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
-
-        Boolean loginAttempt = isLoginAttempt(request, response);
-        log.info("JwtFilter-->>>isAccessAllowed:{}",loginAttempt);
-
-        // 如果请求头不存在token,则可能是执行登陆操作或是游客状态访问,直接返回true
-        // 如果存在,则进入executeLogin方法执行登入,检查token 是否正确
-        if (loginAttempt) {
-            try {
-                executeLogin(request, response);
-                return true;
-            } catch (Exception e) {
-                log.debug("登陆：{}",e.getMessage());
-                throw new AuthenticationException("Token失效请重新登录");
-            }
-        }else{
-            PrintWriter out = null;
-
-            try {
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("code", ErrorEnum.E_20011.getErrorCode());
-                jsonObject.put("msg", ErrorEnum.E_20011.getErrorMsg());
-
-                HttpServletResponse res = (HttpServletResponse) response;
-                res.setCharacterEncoding("UTF-8");
-                res.setContentType("application/json");
-
-                log.debug("JwtFilter-->>>isAccessAllowed onAccessDenied 2,{}","返回值");
-
-                out = response.getWriter();
-                out.println(jsonObject);
-            } catch (Exception e) {
-               log.debug("JwtFilter-->>>isAccessAllowed isAccessAllowed exception:{}",e.getMessage());
-                return false;
-            } finally {
-                if (null != out) {
-                    out.flush();
-                    out.close();
-                }
-            }
-            return false;
-        }
-    }
-
-    /**
-     * 判断用户是否是登入,检测headers里是否包含token字段
-     */
-    @Override
-    protected boolean isLoginAttempt(ServletRequest request, ServletResponse response) {
-        HttpServletRequest req = (HttpServletRequest) request;
-        String token = req.getHeader(CommonConstant.ACCESS_TOKEN);
-        log.info("JwtFilter-->>>isLoginAttempt {}",req.getRequestURI());
-        /*
-        if(antPathMatcher.match("/userLogin",req.getRequestURI())){
-            return true;
-        }
-        */
-        log.debug("isLoginAttempt:{}",token);
-        // Object o = redisUtil.get(CommonConstant.PREFIX_USER_TOKEN + token);
-        // if(ObjectUtils.isEmpty(o)){
-        //     return false;
-        // }
-        return token != null;
-    }
-
-    /**
-     * 重写AuthenticatingFilter的executeLogin方法丶执行登陆操作
-     */
-    @Override
-    protected boolean executeLogin(ServletRequest request, ServletResponse response) throws Exception {
-
-        log.info("JwtFilter-->>>executeLogin:");
-
-        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-        String token = httpServletRequest.getHeader(CommonConstant.ACCESS_TOKEN);//Access-Token
-
-        log.debug("executeLogin: 1,{}",token);
-
-        JwtToken jwtToken = new JwtToken(token);
-        // 提交给realm进行登入,如果错误他会抛出异常并被捕获, 反之则代表登入成功,返回true
-        getSubject(request, response).login(jwtToken);
-
-        return true;
-    }
-
-    /**
-     * 对跨域提供支持
-     */
+    /*
+     * 前置处理，我们在这进行一些跨域的必要设置
+     * 该方法执行后执行isAccessAllowed方法
+     * */
     @Override
     protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
 
-        log.info("JwtFilter-->>>preHandle:");
+        log.debug("JWTFilter-preHandle 1---->");
 
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
         httpServletResponse.setHeader("Access-control-Allow-Origin", httpServletRequest.getHeader("Origin"));
         httpServletResponse.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PUT,DELETE");
-        httpServletResponse.setHeader("Access-Control-Allow-Headers", httpServletRequest.getHeader("Access-Control-Request-Headers"));
+        httpServletResponse.setHeader("Access-Control-Allow-Headers",
+                httpServletRequest.getHeader("Access-Control-Request-Headers"));
 
-        // 跨域时会首先发送一个option请求，这里我们给option请求直接返回正常状态
+        // 跨域请求会发送两次请求首次为预检请求，其请求方法为 OPTIONS
         if (httpServletRequest.getMethod().equals(RequestMethod.OPTIONS.name())) {
             httpServletResponse.setStatus(HttpStatus.OK.value());
             return false;
         }
-
         return super.preHandle(request, response);
+    }
+
+    /*
+     * 请求是否被允许
+     * 这个方法我们会手动调用 isLoginAttempt 方法及 executeLogin 方法
+     * 该方法返回值：如果未登录，返回false， 进入 onAccessDenied
+     * */
+    @Override
+    protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
+
+        log.debug("JWTFilter-isAccessAllowed 2---->{}",request);
+        if (isLoginAttempt(request, response)) {
+            try {
+                log.debug("JWTFilter-isAccessAllowed 4---->{}","success");
+                Boolean isAccessAllowed = executeLogin(request, response);
+
+                log.debug("JWTFilter-isAccessAllowed 5---->{}",isAccessAllowed);
+                if(!isAccessAllowed){
+                    onAccessDeniedCallback(request,response);
+                }
+                return isAccessAllowed;
+            } catch (Exception e) {
+                log.debug("JWTFilter-isAccessAllowed 5---->{}","response401");
+                return false;
+            }
+        }else {
+            onAccessDeniedCallback(request,response);
+            return false;
+        }
+    }
+
+    private void onAccessDeniedCallback(ServletRequest request, ServletResponse response){
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", ErrorEnum.E_401.getErrorCode());
+        jsonObject.put("msg", ErrorEnum.E_401.getErrorMsg());
+
+        log.debug("onAccessDenied 1:{}",jsonObject);
+
+        PrintWriter out = null;
+        HttpServletResponse res = (HttpServletResponse) response;
+        try {
+            res.setCharacterEncoding("UTF-8");
+            res.setContentType("application/json");
+            out = response.getWriter();
+            out.println(jsonObject);
+        } catch (Exception e) {
+            log.debug("onAccessDenied 2:{}",e.getMessage());
+        } finally {
+            if (null != out) {
+                out.flush();
+                out.close();
+            }
+        }
+    }
+
+    /*
+    * isLoginAttempt判断用户是否想尝试登陆，判断依据为请求头中是否包含 Authorization 授权信息，也就是 Token 令牌
+    *
+    * */
+    @Override
+    protected boolean isLoginAttempt(ServletRequest request, ServletResponse response) {
+
+        HttpServletRequest req = (HttpServletRequest) request;
+        String authorization = req.getHeader("Authorization");
+
+        log.debug("JWTFilter-isLoginAttempt 2---->{}",authorization);
+        return authorization != null;
+    }
+
+    /*
+    * 如果有则再执行executeLogin方法进行登陆验证操作，就是我们整合后的鉴权操作，
+    * 因为用Token抛开了Session,此处就相当于是否存在Session的操作，存在则表明登陆成功，
+    * 不存在则需要登陆操作，或者Session过期需要重新登陆是一个原理性质，
+    * 此方法在这里是验证Jwt 中Token是否合法，不合法则返回401需要重新登陆
+    * */
+    @Override
+    protected boolean executeLogin(ServletRequest request, ServletResponse response) throws Exception {
+        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+        String authorization = httpServletRequest.getHeader("Authorization");
+
+        log.debug("JWTFilter-executeLogin 2---->{}",authorization);
+
+        // 这里需要自己实现对Token验证操作
+        JwtToken token = new JwtToken(authorization);
+        log.debug("JWTFilter-executeLogin 3---->{}",token);
+        // 如果登陆失败会抛出异常(Token鉴权失败)
+        try{
+            getSubject(request, response).login(token);
+        }catch (Exception e){
+            log.debug("JWTFilter-executeLogin 4----失败：{}",e.getMessage());
+            return false;
+        }
+
+        log.debug("JWTFilter-executeLogin 4---->{}","成功");
+        return true;
+    }
+
+    /**
+    * Illege request foward to /401
+    */
+    private void response401(ServletRequest req, ServletResponse resp) {
+
+        log.debug("JWTFilter-response401 1---->");
+        /*
+        try {
+            HttpServletResponse httpServletResponse = (HttpServletResponse) resp;
+            httpServletResponse.sendRedirect("/401");
+        } catch (IOException e) {
+            log.debug("JWTFilter-response401 2---->{}",e.getMessage());
+        }
+        */
     }
 }
