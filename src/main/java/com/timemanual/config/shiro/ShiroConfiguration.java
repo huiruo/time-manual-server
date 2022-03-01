@@ -1,6 +1,6 @@
 package com.timemanual.config.shiro;
 
-import com.timemanual.config.jwt.JWTFilter;
+import com.timemanual.config.jwt.JwtFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
@@ -43,7 +43,7 @@ public class ShiroConfiguration {
         Map<String, Filter> filterMap = new LinkedHashMap<>();
 
         // filterMap.put("jwt", new JWTFilter());
-        filterMap.put("jwt", new JWTFilter());
+        filterMap.put("jwt", new JwtFilter());
         shiroFilterFactoryBean.setFilters(filterMap);
 
         // filterMap.put("authc", new AjaxPermissionsAuthorizationFilter());

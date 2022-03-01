@@ -1,7 +1,6 @@
 package com.timemanual.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.timemanual.service.Login2Service;
 import com.timemanual.service.Login3Service;
 import com.timemanual.service.LoginService;
 import com.timemanual.util.CommonUtil;
@@ -17,8 +16,6 @@ public class LoginController {
 
     @Autowired
     private LoginService loginService;
-    @Autowired
-    private Login2Service login2Service;
 
     @Autowired
     private Login3Service login3Service;
