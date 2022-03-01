@@ -6,8 +6,6 @@ import com.timemanual.service.ArticleService;
 import com.timemanual.vo.PaginationVo;
 import com.timemanual.vo.PageParamVo;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.annotation.RequiresAuthentication;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-//@RequestMapping("/article")
 @Slf4j
 public class ArticleController {
 
@@ -23,15 +20,15 @@ public class ArticleController {
     ArticleService articleService;
 
     // @RequiresPermissions("article:list")
-    @RequestMapping("/user/article/query")
     // @RequestMapping("/article/query")
     // @RequiresAuthentication
+    @RequestMapping("/user/article/query")
     public ReqVo<PaginationVo> queryArticle(@RequestBody PageParamVo pageParamVo){
         PaginationVo paginationVo = articleService.queryArticle(pageParamVo.getCurrentPage(), pageParamVo.getPageSize());
         return new ReqVo<>(paginationVo);
     }
 
-    //    @RequestMapping("/query/id")
+    // @RequestMapping("/query/id")
     // 不必带token也能请求到内容, 因为在shiro中配置了过滤规则
     @RequestMapping("/user/article/query/id")
     public ReqVo<Article> queryArticleByID(@RequestParam("id") String articleId){
@@ -39,7 +36,7 @@ public class ArticleController {
             Article article = articleService.queryArticleById(articleId);
             return new ReqVo<>(article);
         }catch (Exception e){
-            System.out.println(e);
+            log.debug("queryArticleByID:{}",e.getMessage());
             return new ReqVo<>(0, e.getMessage());
         }
     }

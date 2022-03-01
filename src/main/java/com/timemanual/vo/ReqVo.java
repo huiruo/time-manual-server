@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class ReqVo<T> {
-    private T data;
+    private T result;
     private int code;
     private String msg;
     private static final int constCode = 200;
@@ -31,10 +31,10 @@ public class ReqVo<T> {
     /**
      * 有数据返回时，状态码为 0，默认提示信息为“操作成功！”
      *
-     * @param data
+     * @param result
      */
-    public ReqVo(T data) {
-        this.data = data;
+    public ReqVo(T result) {
+        this.result = result;
         this.code = constCode;
         this.msg = "操作成功！";
     }
@@ -42,11 +42,11 @@ public class ReqVo<T> {
     /**
      * 有数据返回，状态码为 0
      *
-     * @param data
+     * @param result
      * @param msg
      */
-    public ReqVo(T data, String msg) {
-        this.data = data;
+    public ReqVo(T result, String msg) {
+        this.result = result;
         this.code = constCode;
         this.msg = msg;
     }

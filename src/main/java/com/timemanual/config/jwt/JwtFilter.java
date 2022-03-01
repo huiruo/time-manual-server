@@ -1,5 +1,7 @@
 package com.timemanual.config.jwt;
 
+import com.alibaba.fastjson.JSONObject;
+import com.timemanual.util.constants.ErrorEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.util.AntPathMatcher;
@@ -12,6 +14,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
 
 @Slf4j
 public class JwtFilter extends BasicHttpAuthenticationFilter {
@@ -27,18 +30,46 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
      */
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
-        log.info("JwtFilter-->>>isAccessAllowed-Method:");
-        //如果请求头不存在token,则可能是执行登陆操作或是游客状态访问,直接返回true
-        if (!isLoginAttempt(request, response)) {
-            return true;
-        }
-        //如果存在,则进入executeLogin方法执行登入,检查token 是否正确
-        try {
-            executeLogin(request, response);
-            return true;
-        } catch (Exception e) {
-            log.debug("登陆：{}",e.getMessage());
-            throw new AuthenticationException("Token失效请重新登录");
+
+        Boolean loginAttempt = isLoginAttempt(request, response);
+        log.info("JwtFilter-->>>isAccessAllowed:{}",loginAttempt);
+
+        // 如果请求头不存在token,则可能是执行登陆操作或是游客状态访问,直接返回true
+        // 如果存在,则进入executeLogin方法执行登入,检查token 是否正确
+        if (loginAttempt) {
+            try {
+                executeLogin(request, response);
+                return true;
+            } catch (Exception e) {
+                log.debug("登陆：{}",e.getMessage());
+                throw new AuthenticationException("Token失效请重新登录");
+            }
+        }else{
+            PrintWriter out = null;
+
+            try {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("code", ErrorEnum.E_20011.getErrorCode());
+                jsonObject.put("msg", ErrorEnum.E_20011.getErrorMsg());
+
+                HttpServletResponse res = (HttpServletResponse) response;
+                res.setCharacterEncoding("UTF-8");
+                res.setContentType("application/json");
+
+                log.debug("JwtFilter-->>>isAccessAllowed onAccessDenied 2,{}","返回值");
+
+                out = response.getWriter();
+                out.println(jsonObject);
+            } catch (Exception e) {
+               log.debug("JwtFilter-->>>isAccessAllowed isAccessAllowed exception:{}",e.getMessage());
+                return false;
+            } finally {
+                if (null != out) {
+                    out.flush();
+                    out.close();
+                }
+            }
+            return false;
         }
     }
 
@@ -47,24 +78,20 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
      */
     @Override
     protected boolean isLoginAttempt(ServletRequest request, ServletResponse response) {
-        log.info("JwtFilter-->>>isLoginAttempt-Method:init()");
         HttpServletRequest req = (HttpServletRequest) request;
+        String token = req.getHeader(CommonConstant.ACCESS_TOKEN);
+        log.info("JwtFilter-->>>isLoginAttempt {}",req.getRequestURI());
+        /*
         if(antPathMatcher.match("/userLogin",req.getRequestURI())){
             return true;
         }
-        String token = req.getHeader(CommonConstant.ACCESS_TOKEN);
-
+        */
         log.debug("isLoginAttempt:{}",token);
-
-        if (token == null) {
-            return false;
-        }
-//        Object o = redisUtil.get(CommonConstant.PREFIX_USER_TOKEN + token);
-//        if(ObjectUtils.isEmpty(o)){
-//            return false;
-//        }
-        log.info("JwtFilter-->>>isLoginAttempt-Method:返回true");
-        return true;
+        // Object o = redisUtil.get(CommonConstant.PREFIX_USER_TOKEN + token);
+        // if(ObjectUtils.isEmpty(o)){
+        //     return false;
+        // }
+        return token != null;
     }
 
     /**
@@ -72,7 +99,9 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
      */
     @Override
     protected boolean executeLogin(ServletRequest request, ServletResponse response) throws Exception {
-        log.info("JwtFilter-->>>executeLogin-Method:init()");
+
+        log.info("JwtFilter-->>>executeLogin:");
+
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         String token = httpServletRequest.getHeader(CommonConstant.ACCESS_TOKEN);//Access-Token
 
@@ -90,17 +119,22 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
      */
     @Override
     protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
-        log.info("JwtFilter-->>>preHandle-Method:init()");
+
+        log.info("JwtFilter-->>>preHandle:");
+
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
         httpServletResponse.setHeader("Access-control-Allow-Origin", httpServletRequest.getHeader("Origin"));
         httpServletResponse.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PUT,DELETE");
         httpServletResponse.setHeader("Access-Control-Allow-Headers", httpServletRequest.getHeader("Access-Control-Request-Headers"));
+
         // 跨域时会首先发送一个option请求，这里我们给option请求直接返回正常状态
         if (httpServletRequest.getMethod().equals(RequestMethod.OPTIONS.name())) {
             httpServletResponse.setStatus(HttpStatus.OK.value());
             return false;
         }
+
         return super.preHandle(request, response);
     }
 }
