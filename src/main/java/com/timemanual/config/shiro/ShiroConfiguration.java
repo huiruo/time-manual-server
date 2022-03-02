@@ -74,7 +74,6 @@ public class ShiroConfiguration {
         // filterChainDefinitionMap.put("/error", "anon");
 
         filterChainDefinitionMap.put("/login/auth", "anon");
-        // filterChainDefinitionMap.put("/user/**", "jwt");
         // 其余路径均拦截
         filterChainDefinitionMap.put("/**", "jwt");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);

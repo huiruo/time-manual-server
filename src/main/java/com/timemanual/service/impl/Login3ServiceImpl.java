@@ -3,6 +3,7 @@ package com.timemanual.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.timemanual.config.jwt.JwtUtil;
+import com.timemanual.config.redis.RedisUtil;
 import com.timemanual.config.shiro.ShiroAuthToken;
 import com.timemanual.dto.SessionUserInfo;
 import com.timemanual.entity.SysUser;
@@ -26,6 +27,9 @@ public class Login3ServiceImpl implements Login3Service {
     @Autowired
     Cache<String, SessionUserInfo> cacheMap;
 
+    @Autowired
+    RedisUtil redisUtil;
+
     // 不使用jwt,使用shiro 自带登陆
     @Override
     public JSONObject authLogin3(String username, String password) {
@@ -45,6 +49,8 @@ public class Login3ServiceImpl implements Login3Service {
             // test end
 
             String generateToken = JwtUtil.sign(username, password);
+            Long currentTimeMillis = System.currentTimeMillis();
+            redisUtil.set(username,currentTimeMillis,JwtUtil.REFRESH_EXPIRE_TIME);
             info.put("token", generateToken);
         } catch (UnknownAccountException e) {
             info.put("msg", "用户名有误");
@@ -67,6 +73,11 @@ public class Login3ServiceImpl implements Login3Service {
             if (user.getPassword().equals(password)) {
                 // String generateToken = JWTUtil.sign(username, password);
                 String generateToken = JwtUtil.sign(username, password);
+                Long currentTimeMillis = System.currentTimeMillis();
+                redisUtil.set(username,currentTimeMillis,JwtUtil.REFRESH_EXPIRE_TIME);
+
+                log.debug("取值：{}",redisUtil.get("admin"));;
+
                 info.put("token", generateToken);
                 // info.put("result", info);
 

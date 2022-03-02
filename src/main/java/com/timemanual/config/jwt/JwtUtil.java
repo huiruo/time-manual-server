@@ -15,12 +15,18 @@ import java.util.Date;
 @Slf4j
 public class JwtUtil {
     /**
-     * 过期时间30分钟
-     */
-//    public static final long EXPIRE_TIME = 30 * 60 * 1000;
-//    public static final long EXPIRE_TIME = 30 * 60 * 1000;
-    private static final long EXPIRE_TIME = 60 * 1000;
-
+    * 过期时间30分钟
+    */
+    // public static final long EXPIRE_TIME = 30 * 60 * 1000;
+    // public static final long EXPIRE_TIME = 30 * 60 * 1000;
+    // public static final long EXPIRE_TIME = 60 * 1000;
+    // token到期时间，毫秒为单位
+    public static final long EXPIRE_TIME = 2 * 60 * 1000;
+    // RefreshToken到期时间为30分钟，秒为单位
+    // public static final long REFRESH_EXPIRE_TIME=30 * 60;
+    public static final long REFRESH_EXPIRE_TIME=5 * 60;
+    public static final String AUTH_HEADER_KEY = "Authorization";
+    public static final String TOKEN_PREFIX = "Bearer ";
 
     /**
      * 校验token是否正确
@@ -35,7 +41,7 @@ public class JwtUtil {
             JWTVerifier verifier = JWT.require(algorithm).withClaim("username", username).build();
             // 效验TOKEN
             DecodedJWT jwt = verifier.verify(token);
-            log.debug("jwtUtil---verify success:{}");
+            log.debug("jwtUtil---verify success,过期时间:{}",jwt.getExpiresAt());
             return true;
         } catch (TokenExpiredException exception) {
             log.debug("jwtUtil---verify 过期:{}",exception.getMessage());

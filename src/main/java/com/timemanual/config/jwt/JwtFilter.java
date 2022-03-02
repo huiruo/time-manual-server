@@ -1,7 +1,7 @@
 package com.timemanual.config.jwt;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.timemanual.config.redis.RedisUtil;
 import com.timemanual.util.constants.ErrorEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
@@ -93,6 +93,37 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         }
     }
 
+    /**
+     * 刷新AccessToken，进行判断RefreshToken是否过期，未过期就返回新的AccessToken且继续正常访问
+     * @param request
+     * @param response
+     * @return
+     */
+    private boolean refreshToken(ServletRequest request, ServletResponse response) {
+        String token = ((HttpServletRequest)request).getHeader(JwtUtil.AUTH_HEADER_KEY);
+        String account = JwtUtil.getAccount(token);
+        Long currentTime = JwtUtil.getCurrentTime(token);
+        // 判断Redis中RefreshToken是否存在
+        if (RedisUtil.hasKey(account)) {
+            // Redis中RefreshToken还存在，获取RefreshToken的时间戳
+            Long currentTimeMillisRedis = (Long) RedisUtil.get(account);
+            // 获取当前AccessToken中的时间戳，与RefreshToken的时间戳对比，如果当前时间戳一致，进行AccessToken刷新
+            if (currentTimeMillisRedis.equals(currentTime)) {
+                // 获取当前最新时间戳
+                Long currentTimeMillis =System.currentTimeMillis();
+                RedisUtil.set(account, currentTimeMillis,
+                        JwtUtil.REFRESH_EXPIRE_TIME);
+                // 刷新AccessToken，设置时间戳为当前最新时间戳
+                token = JwtUtil.sign(account, currentTimeMillis);
+                HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+                httpServletResponse.setHeader("RefreshToken", token);
+                httpServletResponse.setHeader("Access-Control-Expose-Headers", "RefreshToken");
+                return true;
+            }
+        }
+        return false;
+    }
+
     /*
     * isLoginAttempt判断用户是否想尝试登陆，判断依据为请求头中是否包含 Authorization 授权信息，也就是 Token 令牌
     *
@@ -101,7 +132,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
     protected boolean isLoginAttempt(ServletRequest request, ServletResponse response) {
 
         HttpServletRequest req = (HttpServletRequest) request;
-        String authorization = req.getHeader("Authorization");
+        String authorization = req.getHeader(JwtUtil.AUTH_HEADER_KEY);
 
         log.debug("JWTFilter-isLoginAttempt 2---->{}",authorization);
         return authorization != null;
@@ -133,21 +164,5 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
 
         log.debug("JWTFilter-executeLogin 4---->{}","成功");
         return true;
-    }
-
-    /**
-    * Illege request foward to /401
-    */
-    private void response401(ServletRequest req, ServletResponse resp) {
-
-        log.debug("JWTFilter-response401 1---->");
-        /*
-        try {
-            HttpServletResponse httpServletResponse = (HttpServletResponse) resp;
-            httpServletResponse.sendRedirect("/401");
-        } catch (IOException e) {
-            log.debug("JWTFilter-response401 2---->{}",e.getMessage());
-        }
-        */
     }
 }
