@@ -60,13 +60,17 @@ public class UserRealm extends AuthorizingRealm {
     * 主要内容是根据提交的用户名与密码到数据库进行匹配，如果匹配到了就返回一个AuthenticationInfo对象否则返回null，
     * 同样shiro会帮我们进行判断当返回null的时候会抛出一个异常，开发者可根据该异常进行相应的逻辑处理
     */
+    /*
+    * new use doGetAuthenticationInfo jwt refresh
+    */
+    // @SneakyThrows
     @Override
-    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken auth) {
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken auth) throws AuthenticationException{
         log.info("====================Token认证====================");
         String token = (String) auth.getCredentials();
 
         // 解密获得username，用于和数据库进行对比
-        String username = JwtUtil.getUsername(token);
+        String username= JwtUtil.getAccount(token);
 
         log.debug("doGetAuthenticationInfo 1:{}",token);
         log.debug("doGetAuthenticationInfo 2:{}",username);
@@ -87,11 +91,17 @@ public class UserRealm extends AuthorizingRealm {
             return null;
         }
 
-        if (!JwtUtil.verify(token, username, user.getPassword())) {
-            log.debug("doGetAuthenticationInfo 4:{}","Username or password error");
-            return null;
-            // throw new RuntimeException("doGetAuthenticationInfo: Exception");
-        }
+        // if (!JwtUtil.verify(token, username, user.getPassword())) {
+//        try{
+            if (!JwtUtil.verify(token)) {
+               log.debug("doGetAuthenticationInfo 4:{}","Username or password error");
+               // throw new AuthenticationException("认证失败！");
+               return null;
+            }
+//        }catch (Exception e){
+//            log.debug("doGetAuthenticationInfo 4-a:{}",e.getMessage());
+//            throw new AuthenticationException("Token已过期(Token expired or incorrect:");
+//        }
 
         log.debug("doGetAuthenticationInfo 4-2:{}","success");
 

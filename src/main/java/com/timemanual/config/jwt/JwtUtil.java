@@ -3,10 +3,7 @@ package com.timemanual.config.jwt;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.exceptions.SignatureVerificationException;
-import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.exceptions.*;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,34 +11,77 @@ import java.util.Date;
 
 @Slf4j
 public class JwtUtil {
-    /**
-    * 过期时间30分钟
-    */
-    // public static final long EXPIRE_TIME = 30 * 60 * 1000;
-    // public static final long EXPIRE_TIME = 30 * 60 * 1000;
-    // public static final long EXPIRE_TIME = 60 * 1000;
-    // token到期时间，毫秒为单位
-    public static final long EXPIRE_TIME = 2 * 60 * 1000;
+    // token到期时间5分钟，毫秒为单位
+    // public static final long EXPIRE_TIME = 5*60*1000;
+    public static final long EXPIRE_TIME = 1*60*1000;
     // RefreshToken到期时间为30分钟，秒为单位
-    // public static final long REFRESH_EXPIRE_TIME=30 * 60;
-    public static final long REFRESH_EXPIRE_TIME=5 * 60;
+    public static final long REFRESH_EXPIRE_TIME = 30*60;
+    private static final String TOKEN_SECRET = "ljdyaishijin**3nkjnj??";  //密钥盐
+
+    private static final String CLAIM_NAME = "username";
+    // private static final String CLAIM_NAME="account";
     public static final String AUTH_HEADER_KEY = "Authorization";
     public static final String TOKEN_PREFIX = "Bearer ";
 
+
     /**
-     * 校验token是否正确
-     * @param token  密钥
-     * @param secret 用户的密码
-     * @return 是否正确
+     * 生成token
      */
-    public static boolean verify(String token, String username, String secret) {
+    public static String sign(String account,Long currentTime){
+
+        String token=null;
         try {
-            // 根据密码生成JWT效验器
-            Algorithm algorithm = Algorithm.HMAC256(secret);
-            JWTVerifier verifier = JWT.require(algorithm).withClaim("username", username).build();
-            // 效验TOKEN
-            DecodedJWT jwt = verifier.verify(token);
-            log.debug("jwtUtil---verify success,过期时间:{}",jwt.getExpiresAt());
+            Date expireAt=new Date(currentTime+EXPIRE_TIME);
+            token = JWT.create()
+                    .withIssuer("auth0")//发行人
+                    .withClaim(CLAIM_NAME,account)//存放数据
+                    .withClaim("currentTime",currentTime)
+                    .withExpiresAt(expireAt)//过期时间
+                    .sign(Algorithm.HMAC256(TOKEN_SECRET));
+        } catch (IllegalArgumentException|JWTCreationException je) {
+
+        }
+        return token;
+    }
+
+
+    /**
+     * token验证
+     */
+     public static Boolean verify(String token){
+        /*
+        // 根据密码生成JWT效验器
+        Algorithm algorithm = Algorithm.HMAC256(secret);
+        JWTVerifier verifier = JWT.require(algorithm).withClaim(CLAIM_NAME, username).build();
+        // 效验TOKEN
+        DecodedJWT jwt = verifier.verify(token);
+        log.debug("jwtUtil---verify success,过期时间:{}",jwt.getExpiresAt());
+        return true;
+         */
+
+        /*
+            JWTVerifier jwtVerifier=JWT.require(Algorithm.HMAC256(TOKEN_SECRET)).withIssuer("auth0").build();
+            DecodedJWT decodedJWT=jwtVerifier.verify(token);
+            log.debug("verify---认证通过：");
+            log.debug("verify---"+CLAIM_NAME+":",decodedJWT.getClaim(CLAIM_NAME).asString());
+            log.debug("verify---过期时间：{}",decodedJWT.getExpiresAt());
+            return true;
+        */
+
+         JWTVerifier jwtVerifier=JWT.require(Algorithm.HMAC256(TOKEN_SECRET)).withIssuer("auth0").build();
+         DecodedJWT decodedJWT=jwtVerifier.verify(token);
+         log.debug("verify---认证通过：");
+         log.debug("verify---"+CLAIM_NAME+":",decodedJWT.getClaim(CLAIM_NAME).asString());
+         log.debug("verify---过期时间：{}",decodedJWT.getExpiresAt());
+         return true;
+         /*
+         try {
+            //创建token验证器
+            JWTVerifier jwtVerifier=JWT.require(Algorithm.HMAC256(TOKEN_SECRET)).withIssuer("auth0").build();
+            DecodedJWT decodedJWT=jwtVerifier.verify(token);
+            log.debug("verify---认证通过：");
+            log.debug("verify---"+CLAIM_NAME+":",decodedJWT.getClaim(CLAIM_NAME).asString());
+            log.debug("verify---过期时间：{}",decodedJWT.getExpiresAt());
             return true;
         } catch (TokenExpiredException exception) {
             log.debug("jwtUtil---verify 过期:{}",exception.getMessage());
@@ -61,36 +101,26 @@ public class JwtUtil {
             // throw new RuntimeException("verify:error 2");
             return false;
         }
-
+        */
     }
 
-    /**
-     * 获得token中的信息无需secret解密也能获得
-     * @return token中包含的用户名
-     */
-    public static String getUsername(String token) {
-        try {
-            DecodedJWT jwt = JWT.decode(token);
-            return jwt.getClaim("username").asString();
-        } catch (JWTDecodeException e) {
-            log.error("error：{}", e.getMessage());
+    public static String getAccount(String token){
+        try{
+            DecodedJWT decodedJWT=JWT.decode(token);
+            return decodedJWT.getClaim(CLAIM_NAME).asString();
+
+        }catch (JWTCreationException e){
             return null;
         }
     }
 
-    /**
-     * 生成签名,5min(分钟)后过期
-     * @param username 用户名
-     * @param secret   用户的密码
-     * @return 加密的token
-     */
-    public static String sign(String username, String secret) {
-        Date date = new Date(System.currentTimeMillis() + EXPIRE_TIME);
-        Algorithm algorithm = Algorithm.HMAC256(secret);
-        // 附带username信息
-        return JWT.create()
-                .withClaim("username", username)
-                .withExpiresAt(date)
-                .sign(algorithm);
+    public static Long getCurrentTime(String token){
+        try{
+            DecodedJWT decodedJWT= JWT.decode(token);
+            return decodedJWT.getClaim("currentTime").asLong();
+
+        }catch (JWTCreationException e){
+            return null;
+        }
     }
 }

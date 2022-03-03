@@ -55,6 +55,8 @@ public class ShiroConfiguration {
         shiroFilterFactoryBean.setFilters(filterMap);
         // filterMap.put("jwt", new AjaxPermissionsAuthorizationFilter());
         // filterMap.put("authc", new AjaxPermissionsAuthorizationFilter());
+        // filterMap.put("jwt", new JwtFilter());
+        // test jwt
         filterMap.put("jwt", new JwtFilter());
 
         /*定义shiro过滤链  Map结构

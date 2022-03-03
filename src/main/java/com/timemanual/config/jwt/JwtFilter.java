@@ -1,6 +1,8 @@
 package com.timemanual.config.jwt;
 
 import com.alibaba.fastjson.JSONObject;
+import com.auth0.jwt.exceptions.SignatureVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.timemanual.config.redis.RedisUtil;
 import com.timemanual.util.constants.ErrorEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -22,11 +24,11 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
      * */
     @Override
     protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
-
-        log.debug("JWTFilter-preHandle 1---->");
-
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+
+        log.debug("JWTFilter-preHandle 2---->{}",httpServletRequest.getRequestURI());
+
         httpServletResponse.setHeader("Access-control-Allow-Origin", httpServletRequest.getHeader("Origin"));
         httpServletResponse.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PUT,DELETE");
         httpServletResponse.setHeader("Access-Control-Allow-Headers",
@@ -48,10 +50,13 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
 
-        log.debug("JWTFilter-isAccessAllowed 2---->{}",request);
+        log.debug("====isAccessAllowed======");
+
+        // 查看当前Header中是否携带Authorization属性
         if (isLoginAttempt(request, response)) {
             try {
-                log.debug("JWTFilter-isAccessAllowed 4---->{}","success");
+                executeLogin(request, response);
+                /*
                 Boolean isAccessAllowed = executeLogin(request, response);
 
                 log.debug("JWTFilter-isAccessAllowed 5---->{}",isAccessAllowed);
@@ -59,14 +64,98 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
                     onAccessDeniedCallback(request,response);
                 }
                 return isAccessAllowed;
+                */
+                return true;
             } catch (Exception e) {
-                log.debug("JWTFilter-isAccessAllowed 5---->{}","response401");
-                return false;
+                log.debug("JWTFilter-isAccessAllowed 走刷新逻辑---->:{}",e.getMessage());
+                // 认证出现异常，传递错误信息msg
+
+                String msg = e.getMessage();
+
+                // 获取应用异常(该Cause是导致抛出此throwable(异常)的throwable(异常))
+                Throwable throwable = e.getCause();
+
+                if (throwable instanceof SignatureVerificationException) {
+                    // 该异常为JWT的AccessToken认证失败(Token或者密钥不正确)
+                    msg = "Token或者密钥不正确(" + throwable.getMessage() + ")";
+                    log.debug("JWTFilter-isAccessAllowed 走刷新逻辑---->{}","Token或者密钥不正确");
+                    return false;
+                } else if (throwable instanceof TokenExpiredException) {
+
+                    log.debug("JWTFilter-isAccessAllowed 走刷新逻辑2---->{}","该异常为JWT的AccessToken已过期");
+
+                    if (refreshToken(request, response)) {
+                        log.debug("JWTFilter-isAccessAllowed 走刷新逻辑3---->{}","成功续签");
+                        return true;
+                    }else {
+                        log.debug("JWTFilter-isAccessAllowed 走刷新逻辑4---->{}","过期不可以续签");
+                        onAccessDeniedCallback(request,response);
+                        return false;
+                    }
+                    /*
+                    // 该异常为JWT的AccessToken已过期，判断RefreshToken未过期就进行AccessToken刷新
+                    if (this.refreshToken(request, response)) {
+                        return true;
+                    } else {
+                        msg = "Token已过期(" + throwable.getMessage() + ")";
+                    }
+                    */
+                } else {
+                    log.debug("JWTFilter-isAccessAllowed 走刷新逻辑---->{}","应用异常不为空");
+                    onAccessDeniedCallback(request,response);
+                    return false;
+                }
             }
         }else {
+            log.debug("JWTFilter-isAccessAllowed---->{}","没携带token直接拦截");
             onAccessDeniedCallback(request,response);
             return false;
         }
+    }
+
+    /*
+     * isLoginAttempt判断用户是否想尝试登陆，判断依据为请求头中是否包含 Authorization 授权信息，也就是 Token 令牌
+     *
+     * */
+    @Override
+    protected boolean isLoginAttempt(ServletRequest request, ServletResponse response) {
+
+        HttpServletRequest req = (HttpServletRequest) request;
+        String authorization = req.getHeader(JwtUtil.AUTH_HEADER_KEY);
+
+        log.debug("JWTFilter-isLoginAttempt 2---->{}",authorization);
+        return authorization != null;
+    }
+
+    /*
+     * 如果有则再执行executeLogin方法进行登陆验证操作，就是我们整合后的鉴权操作，
+     * 因为用Token抛开了Session,此处就相当于是否存在Session的操作，存在则表明登陆成功，
+     * 不存在则需要登陆操作，或者Session过期需要重新登陆是一个原理性质，
+     * 此方法在这里是验证Jwt 中Token是否合法，不合法则返回401需要重新登陆
+     * */
+    @Override
+    protected boolean executeLogin(ServletRequest request, ServletResponse response) throws Exception {
+        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+        String authorization = httpServletRequest.getHeader("Authorization");
+
+        log.debug("JWTFilter-executeLogin 4---->{}",httpServletRequest.getRequestURI());
+
+        // 这里需要自己实现对Token验证操作
+        JwtToken token = new JwtToken(authorization);
+        this.getSubject(request, response).login(token);
+
+        // 如果登陆失败会抛出异常(Token鉴权失败)
+        /*
+        try{
+            getSubject(request, response).login(token);
+        }catch (Exception e){
+            log.debug("JWTFilter-executeLogin 4----失败：{}",e.getMessage());
+            return false;
+        }
+        */
+
+        log.debug("JWTFilter-executeLogin 4---->{}","成功");
+        return true;
     }
 
     private void onAccessDeniedCallback(ServletRequest request, ServletResponse response){
@@ -120,49 +209,9 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
                 httpServletResponse.setHeader("Access-Control-Expose-Headers", "RefreshToken");
                 return true;
             }
+        }else {
+            log.debug("续签：{}","redis 账户不存在");
         }
         return false;
-    }
-
-    /*
-    * isLoginAttempt判断用户是否想尝试登陆，判断依据为请求头中是否包含 Authorization 授权信息，也就是 Token 令牌
-    *
-    * */
-    @Override
-    protected boolean isLoginAttempt(ServletRequest request, ServletResponse response) {
-
-        HttpServletRequest req = (HttpServletRequest) request;
-        String authorization = req.getHeader(JwtUtil.AUTH_HEADER_KEY);
-
-        log.debug("JWTFilter-isLoginAttempt 2---->{}",authorization);
-        return authorization != null;
-    }
-
-    /*
-    * 如果有则再执行executeLogin方法进行登陆验证操作，就是我们整合后的鉴权操作，
-    * 因为用Token抛开了Session,此处就相当于是否存在Session的操作，存在则表明登陆成功，
-    * 不存在则需要登陆操作，或者Session过期需要重新登陆是一个原理性质，
-    * 此方法在这里是验证Jwt 中Token是否合法，不合法则返回401需要重新登陆
-    * */
-    @Override
-    protected boolean executeLogin(ServletRequest request, ServletResponse response) throws Exception {
-        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-        String authorization = httpServletRequest.getHeader("Authorization");
-
-        log.debug("JWTFilter-executeLogin 2---->{}",authorization);
-
-        // 这里需要自己实现对Token验证操作
-        JwtToken token = new JwtToken(authorization);
-        log.debug("JWTFilter-executeLogin 3---->{}",token);
-        // 如果登陆失败会抛出异常(Token鉴权失败)
-        try{
-            getSubject(request, response).login(token);
-        }catch (Exception e){
-            log.debug("JWTFilter-executeLogin 4----失败：{}",e.getMessage());
-            return false;
-        }
-
-        log.debug("JWTFilter-executeLogin 4---->{}","成功");
-        return true;
     }
 }
