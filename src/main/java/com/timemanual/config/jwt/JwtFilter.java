@@ -53,9 +53,9 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         log.debug("====isAccessAllowed======");
 
         // 查看当前Header中是否携带Authorization属性
-        if (isLoginAttempt(request, response)) {
+        if (isLoginAttemptCus(request, response)) {
             try {
-                executeLogin(request, response);
+                Boolean isAccessAllowed = executeLogin(request, response);
                 /*
                 Boolean isAccessAllowed = executeLogin(request, response);
 
@@ -65,7 +65,9 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
                 }
                 return isAccessAllowed;
                 */
-                return true;
+                // return true;
+                log.debug("JWTFilter-isAccessAllowed 没走刷新逻辑---->:{}","直接返回true");
+                return isAccessAllowed;
             } catch (Exception e) {
                 log.debug("JWTFilter-isAccessAllowed 走刷新逻辑---->:{}",e.getMessage());
                 // 认证出现异常，传递错误信息msg
@@ -117,13 +119,14 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
      * isLoginAttempt判断用户是否想尝试登陆，判断依据为请求头中是否包含 Authorization 授权信息，也就是 Token 令牌
      *
      * */
-    @Override
-    protected boolean isLoginAttempt(ServletRequest request, ServletResponse response) {
+    //@Override 如果选这继承写法会导致失败的时候二次调用 验证
+    // private boolean isLoginAttempt(ServletRequest request, ServletResponse response) {
+    private boolean isLoginAttemptCus(ServletRequest request, ServletResponse response) {
 
         HttpServletRequest req = (HttpServletRequest) request;
         String authorization = req.getHeader(JwtUtil.AUTH_HEADER_KEY);
 
-        log.debug("JWTFilter-isLoginAttempt 2---->{}",authorization);
+        log.debug("isLoginAttempt判断用户是否想尝试登陆，判断依据为请求头中是否包含---->{}",authorization);
         return authorization != null;
     }
 
@@ -138,27 +141,29 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         String authorization = httpServletRequest.getHeader("Authorization");
 
-        log.debug("JWTFilter-executeLogin 4---->{}",httpServletRequest.getRequestURI());
+        log.debug("JWTFilter-执行登陆 4---->{}",httpServletRequest.getRequestURI());
 
         // 这里需要自己实现对Token验证操作
         JwtToken token = new JwtToken(authorization);
-        this.getSubject(request, response).login(token);
+        // this.getSubject(request, response).login(token);
 
         // 如果登陆失败会抛出异常(Token鉴权失败)
-        /*
+        ///*
         try{
             getSubject(request, response).login(token);
         }catch (Exception e){
-            log.debug("JWTFilter-executeLogin 4----失败：{}",e.getMessage());
+            log.debug("JWTFilter-执行登陆 4----失败：{}",e.getMessage());
             return false;
         }
-        */
+        //*/
 
         log.debug("JWTFilter-executeLogin 4---->{}","成功");
         return true;
     }
 
     private void onAccessDeniedCallback(ServletRequest request, ServletResponse response){
+        log.debug("===onAccessDeniedCallback终点===");
+        /*
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", ErrorEnum.E_401.getErrorCode());
         jsonObject.put("msg", ErrorEnum.E_401.getErrorMsg());
@@ -180,6 +185,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
                 out.close();
             }
         }
+        */
     }
 
     /**

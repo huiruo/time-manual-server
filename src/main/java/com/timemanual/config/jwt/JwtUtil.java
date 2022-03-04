@@ -67,13 +67,16 @@ public class JwtUtil {
             log.debug("verify---过期时间：{}",decodedJWT.getExpiresAt());
             return true;
         */
-
-         JWTVerifier jwtVerifier=JWT.require(Algorithm.HMAC256(TOKEN_SECRET)).withIssuer("auth0").build();
-         DecodedJWT decodedJWT=jwtVerifier.verify(token);
-         log.debug("verify---认证通过：");
-         log.debug("verify---"+CLAIM_NAME+":",decodedJWT.getClaim(CLAIM_NAME).asString());
-         log.debug("verify---过期时间：{}",decodedJWT.getExpiresAt());
-         return true;
+         try {
+             JWTVerifier jwtVerifier=JWT.require(Algorithm.HMAC256(TOKEN_SECRET)).withIssuer("auth0").build();
+             DecodedJWT decodedJWT=jwtVerifier.verify(token);
+             log.debug("verify---认证通过：");
+             log.debug("verify---"+CLAIM_NAME+":",decodedJWT.getClaim(CLAIM_NAME).asString());
+             log.debug("verify---过期时间：{}",decodedJWT.getExpiresAt());
+             return true;
+         }catch (Exception e){
+             return false;
+         }
          /*
          try {
             //创建token验证器

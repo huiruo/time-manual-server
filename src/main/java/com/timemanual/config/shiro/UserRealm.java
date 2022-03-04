@@ -1,6 +1,7 @@
 package com.timemanual.config.shiro;
 
 import com.alibaba.fastjson.JSONObject;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.timemanual.config.jwt.JwtToken;
 import com.timemanual.config.jwt.JwtUtil;
 import com.timemanual.entity.SysUser;
@@ -87,24 +88,35 @@ public class UserRealm extends AuthorizingRealm {
 
         if (user == null) {
             log.debug("doGetAuthenticationInfo 3-1:");
-            // throw new AuthenticationException("User didn't existed!");
             return null;
         }
-
-        // if (!JwtUtil.verify(token, username, user.getPassword())) {
-//        try{
-            if (!JwtUtil.verify(token)) {
-               log.debug("doGetAuthenticationInfo 4:{}","Username or password error");
-               // throw new AuthenticationException("认证失败！");
-               return null;
+        /*
+        try{
+        }catch (Exception e){
+            log.debug("doGetAuthenticationInfo 4-a:{}",e.getMessage());
+            throw new AuthenticationException("token已经失效，请重新登录！");
+        }
+        */
+        if (!JwtUtil.verify(token)) {
+            log.debug("doGetAuthenticationInfo 4:{}","Username or password error");
+            // throw new AuthenticationException("Token expired or incorrect.");
+            // throw new TokenExpiredException("token认证失效，token过期，重新登陆");
+            return null;
+        }else {
+            /*
+            //判断AccessToken和refreshToken的时间节点是否一致
+            long current= (long) redisUtil.get(username);
+            if (current==JWTUtil.getExpire(jwt)){
+                return new SimpleAuthenticationInfo(jwt,jwt,"MyRealm");
+            }else{
+                throw new AuthenticationException("token已经失效，请重新登录！");
             }
-//        }catch (Exception e){
-//            log.debug("doGetAuthenticationInfo 4-a:{}",e.getMessage());
-//            throw new AuthenticationException("Token已过期(Token expired or incorrect:");
-//        }
+            * */
+            // throw new AuthenticationException("token已经失效，请重新登录！");
+        }
 
         log.debug("doGetAuthenticationInfo 4-2:{}","success");
-
         return new SimpleAuthenticationInfo(token, token, getName());
+        //return null;
     }
 }
