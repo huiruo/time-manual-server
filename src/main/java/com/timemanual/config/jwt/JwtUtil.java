@@ -44,67 +44,42 @@ public class JwtUtil {
         return token;
     }
 
+    //获取过期时间
+    public static Long getExpire(String token){
+        try {
+            DecodedJWT jwt = JWT.decode(token);
+            return jwt.getClaim("currentTime").asLong();
+        }catch (Exception e){
+            return null;
+        }
+    }
 
     /**
      * token验证
      */
      public static Boolean verify(String token){
-        /*
-        // 根据密码生成JWT效验器
-        Algorithm algorithm = Algorithm.HMAC256(secret);
-        JWTVerifier verifier = JWT.require(algorithm).withClaim(CLAIM_NAME, username).build();
-        // 效验TOKEN
-        DecodedJWT jwt = verifier.verify(token);
-        log.debug("jwtUtil---verify success,过期时间:{}",jwt.getExpiresAt());
-        return true;
-         */
-
-        /*
-            JWTVerifier jwtVerifier=JWT.require(Algorithm.HMAC256(TOKEN_SECRET)).withIssuer("auth0").build();
-            DecodedJWT decodedJWT=jwtVerifier.verify(token);
-            log.debug("verify---认证通过：");
-            log.debug("verify---"+CLAIM_NAME+":",decodedJWT.getClaim(CLAIM_NAME).asString());
-            log.debug("verify---过期时间：{}",decodedJWT.getExpiresAt());
-            return true;
-        */
          try {
              JWTVerifier jwtVerifier=JWT.require(Algorithm.HMAC256(TOKEN_SECRET)).withIssuer("auth0").build();
              DecodedJWT decodedJWT=jwtVerifier.verify(token);
-             log.debug("verify---认证通过：");
              log.debug("verify---"+CLAIM_NAME+":",decodedJWT.getClaim(CLAIM_NAME).asString());
-             log.debug("verify---过期时间：{}",decodedJWT.getExpiresAt());
+             log.debug("verify---认证通过,过期时间：{}",decodedJWT.getExpiresAt());
              return true;
-         }catch (Exception e){
-             return false;
-         }
-         /*
-         try {
-            //创建token验证器
-            JWTVerifier jwtVerifier=JWT.require(Algorithm.HMAC256(TOKEN_SECRET)).withIssuer("auth0").build();
-            DecodedJWT decodedJWT=jwtVerifier.verify(token);
-            log.debug("verify---认证通过：");
-            log.debug("verify---"+CLAIM_NAME+":",decodedJWT.getClaim(CLAIM_NAME).asString());
-            log.debug("verify---过期时间：{}",decodedJWT.getExpiresAt());
-            return true;
-        } catch (TokenExpiredException exception) {
-            log.debug("jwtUtil---verify 过期:{}",exception.getMessage());
-            // throw new RuntimeException("未查找到数据");
-            // throw new RuntimeException("verify:过期");
+         } catch (TokenExpiredException e) {
+            log.debug("jwtUtil---verify 过期:{}",e.getMessage());
             return false;
-        } catch (SignatureVerificationException exception) {
-            log.debug("jwtUtil---verify token错误:{}",exception.getMessage());
-            // throw new RuntimeException("verify:token错误");
+        } catch (SignatureVerificationException e) {
+            log.debug("jwtUtil---verify token错误:{}",e.getMessage());
             return false;
-        } catch (JWTDecodeException exception) {
-            log.debug("jwtUtil---verify token解码错误:{}",exception.getMessage());
-            // throw new RuntimeException("verify:token解码错误");
+        } catch (JWTDecodeException e) {
+            log.debug("jwtUtil---verify token解码错误:{}",e.getMessage());
             return false;
-        } catch (JWTVerificationException exception) {
-            log.debug("jwtUtil---verify error 2:{}",exception.getMessage());
-            // throw new RuntimeException("verify:error 2");
+        } catch (JWTVerificationException e) {
+            log.debug("jwtUtil---verify error 2:{}",e.getMessage());
+            return false;
+        } catch (Exception e){
+            log.debug("verify---认证失败：{}",e.getMessage());
             return false;
         }
-        */
     }
 
     public static String getAccount(String token){

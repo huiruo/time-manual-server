@@ -1,9 +1,11 @@
 package com.timemanual.config.shiro;
 
 import com.alibaba.fastjson.JSONObject;
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.timemanual.config.jwt.JwtToken;
 import com.timemanual.config.jwt.JwtUtil;
+import com.timemanual.config.redis.RedisUtil;
 import com.timemanual.entity.SysUser;
 import com.timemanual.service.LoginService;
 import com.timemanual.util.constants.Constants;
@@ -64,59 +66,52 @@ public class UserRealm extends AuthorizingRealm {
     /*
     * new use doGetAuthenticationInfo jwt refresh
     */
-    // @SneakyThrows
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken auth) throws AuthenticationException{
         log.info("====================Token认证====================");
         String token = (String) auth.getCredentials();
-
-        // 解密获得username，用于和数据库进行对比
-        String username= JwtUtil.getAccount(token);
+        String username = "";
+        try{
+            username= JwtUtil.getAccount(token);
+        }catch (Exception e){
+            throw new JWTDecodeException("token invalid");
+        }
 
         log.debug("doGetAuthenticationInfo 1:{}",token);
         log.debug("doGetAuthenticationInfo 2:{}",username);
 
         if (username == null) {
             log.debug("doGetAuthenticationInfo 2-1:{}","token invalid");
-            // throw new AuthenticationException("token invalid");
-            return null;
+            throw new JWTDecodeException("token invalid");
         }
 
         SysUser user = loginService.checkLoginUser(username);
-
         log.debug("doGetAuthenticationInfo 3:{}",user);
 
         if (user == null) {
             log.debug("doGetAuthenticationInfo 3-1:");
-            return null;
+            throw new AuthenticationException("账号或密码错误，请重新登录！");
         }
-        /*
-        try{
-        }catch (Exception e){
-            log.debug("doGetAuthenticationInfo 4-a:{}",e.getMessage());
-            throw new AuthenticationException("token已经失效，请重新登录！");
+
+        // 判断redis kye 是否存在
+        if(!RedisUtil.hasKey(username)){
+            throw new AuthenticationException("token过期或者Token错误！");
         }
-        */
+
         if (!JwtUtil.verify(token)) {
-            log.debug("doGetAuthenticationInfo 4:{}","Username or password error");
-            // throw new AuthenticationException("Token expired or incorrect.");
-            // throw new TokenExpiredException("token认证失效，token过期，重新登陆");
-            return null;
+            log.debug("doGetAuthenticationInfo 4:{}","token过期，重新登陆");
+            throw new TokenExpiredException("token过期，重新登陆");
         }else {
-            /*
-            //判断AccessToken和refreshToken的时间节点是否一致
-            long current= (long) redisUtil.get(username);
-            if (current==JWTUtil.getExpire(jwt)){
-                return new SimpleAuthenticationInfo(jwt,jwt,"MyRealm");
+            // 判断AccessToken和refreshToken的时间节点是否一致
+            long current= (long) RedisUtil.get(username);
+            log.debug("判断AccessToken和refreshToken的时间节点是否一致",current);
+            if (current==JwtUtil.getExpire(token)){
+                log.debug("doGetAuthenticationInfo 成功验证:{}","success");
+                return new SimpleAuthenticationInfo(token,token,getName());
             }else{
                 throw new AuthenticationException("token已经失效，请重新登录！");
             }
-            * */
-            // throw new AuthenticationException("token已经失效，请重新登录！");
         }
 
-        log.debug("doGetAuthenticationInfo 4-2:{}","success");
-        return new SimpleAuthenticationInfo(token, token, getName());
-        //return null;
     }
 }
