@@ -1,10 +1,11 @@
 package com.timemanual.config.shiro;
 
-import com.timemanual.config.exception.MultiRealmAuthenticator;
 import com.timemanual.config.jwt.JwtFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
+import org.apache.shiro.authc.pam.FirstSuccessfulStrategy;
+import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
 import org.apache.shiro.mgt.DefaultSubjectDAO;
 import org.apache.shiro.mgt.SecurityManager;
@@ -39,16 +40,17 @@ public class ShiroConfiguration {
     }
 
     /**
-     * 初始化Authenticator 认证器 身份认证
-     */
+     * 自定义的 ModularRealmAuthenticator
+     **/
     /*
     @Bean
-    public Authenticator authenticator() {
-        MultiRealmAuthenticator authenticator = new MultiRealmAuthenticator();
+    public ModularRealmAuthenticator authenticator(){
+        ModularRealmAuthenticator authenticator = new MultiRealmAuthenticator();
         // 设置两个Realm，一个用于用户登录验证和访问权限获取；一个用于jwt token的认证
-        // authenticator.setRealms(Arrays.asList(jwtShiroRealm(), dbShiroRealm()));
+        authenticator.setRealms(Arrays.asList(userRealm(), userRealm()));
+        //authenticator.setRealms(Arrays.asList(userRealm()));
         // 设置多个realm认证策略，一个成功即跳过其它的
-        // authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
+        authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
         return authenticator;
     }
     */

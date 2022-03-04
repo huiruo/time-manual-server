@@ -1,11 +1,13 @@
 package com.timemanual.config.jwt;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.timemanual.config.redis.RedisUtil;
 import com.timemanual.util.constants.ErrorEnum;
+import com.timemanual.vo.ReqVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
 import org.springframework.http.HttpStatus;
@@ -30,6 +32,8 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
         log.debug("==请求接口==:{}",httpServletRequest.getRequestURI());
+        Long redisKeyExpirTime = RedisUtil.getExpire("admin");
+        log.debug("查看redis过期时间：{}",redisKeyExpirTime);
 
         httpServletResponse.setHeader("Access-control-Allow-Origin", httpServletRequest.getHeader("Origin"));
         httpServletResponse.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PUT,DELETE");
@@ -108,7 +112,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
             }else if(throwable instanceof TokenExpiredException){
                 log.debug("JWTFilter-执行登陆2---->{}","该异常为JWT的AccessToken已过期,开始续签");
                 if (refreshToken(request, response)) {
-                    log.debug("JWTFilter-isAccessAllowed 走刷新逻辑3---->{}","成功续签");
+                    log.debug("========JWTFilter-走刷新逻辑3,{}======","成功续签");
                     return true;
                 }else {
                     log.debug("JWTFilter-isAccessAllowed 走刷新逻辑4---->{}","过期不可以续签");
@@ -118,7 +122,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
                 log.debug("JWTFilter-执行登陆3---->{}","token invalid");
                 return false;
             }else{
-                log.debug("JWTFilter-执行登陆88 ---->{}","应用异常不为空");
+                log.debug("JWTFilter-执行登陆4,不续签 ---->{}","应用异常不为空");
                 return false;
             }
         }
@@ -128,12 +132,8 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
 
     private void onAccessDeniedCallback(ServletRequest request, ServletResponse response){
         log.debug("===onAccessDeniedCallback终点===");
-
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("code", ErrorEnum.E_401.getErrorCode());
-        jsonObject.put("msg", ErrorEnum.E_401.getErrorMsg());
-
-        log.debug("onAccessDenied 1:{}",jsonObject);
+        ReqVo reqVo = new ReqVo<>(401,"权限不足");
+        String reqVoJson = JSON.toJSONString(reqVo);
 
         PrintWriter out = null;
         HttpServletResponse res = (HttpServletResponse) response;
@@ -141,7 +141,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
             res.setCharacterEncoding("UTF-8");
             res.setContentType("application/json");
             out = response.getWriter();
-            out.println(jsonObject);
+            out.println(reqVoJson);
         } catch (Exception e) {
             log.debug("onAccessDenied 2:{}",e.getMessage());
         } finally {
@@ -173,6 +173,10 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
                 Long currentTimeMillis =System.currentTimeMillis();
                 RedisUtil.set(account, currentTimeMillis,
                         JwtUtil.REFRESH_EXPIRE_TIME);
+
+                Long redisKeyExpirTime = RedisUtil.getExpire("admin");
+                log.debug("查看redis过期时间：{}",redisKeyExpirTime);
+
                 // 刷新AccessToken，设置时间戳为当前最新时间戳
                 token = JwtUtil.sign(account, currentTimeMillis);
                 HttpServletResponse httpServletResponse = (HttpServletResponse) response;

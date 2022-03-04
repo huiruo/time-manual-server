@@ -13,11 +13,11 @@ import java.util.Date;
 public class JwtUtil {
     // token到期时间5分钟，毫秒为单位
     // public static final long EXPIRE_TIME = 5*60*1000;
-    public static final long EXPIRE_TIME = 1*60*1000;
+    public static final long EXPIRE_TIME = 30*1000;
     // RefreshToken到期时间为30分钟，秒为单位
     public static final long REFRESH_EXPIRE_TIME = 30*60;
-    private static final String TOKEN_SECRET = "ljdyaishijin**3nkjnj??";  //密钥盐
-
+    // 密钥盐
+    private static final String TOKEN_SECRET = "ljdyaishijin**3nkjnj??";
     private static final String CLAIM_NAME = "username";
     // private static final String CLAIM_NAME="account";
     public static final String AUTH_HEADER_KEY = "Authorization";
@@ -66,6 +66,7 @@ public class JwtUtil {
              return true;
          } catch (TokenExpiredException e) {
             log.debug("jwtUtil---verify 过期:{}",e.getMessage());
+            // throw new TokenExpiredException("token过期，重新登陆");
             return false;
         } catch (SignatureVerificationException e) {
             log.debug("jwtUtil---verify token错误:{}",e.getMessage());

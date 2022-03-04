@@ -98,20 +98,28 @@ public class UserRealm extends AuthorizingRealm {
             throw new AuthenticationException("token过期或者Token错误！");
         }
 
-        if (!JwtUtil.verify(token)) {
-            log.debug("doGetAuthenticationInfo 4:{}","token过期，重新登陆");
-            throw new TokenExpiredException("token过期，重新登陆");
-        }else {
-            // 判断AccessToken和refreshToken的时间节点是否一致
-            long current= (long) RedisUtil.get(username);
-            log.debug("判断AccessToken和refreshToken的时间节点是否一致",current);
-            if (current==JwtUtil.getExpire(token)){
-                log.debug("doGetAuthenticationInfo 成功验证:{}","success");
-                return new SimpleAuthenticationInfo(token,token,getName());
-            }else{
-                throw new AuthenticationException("token已经失效，请重新登录！");
-            }
-        }
 
+        // try{
+            if (!JwtUtil.verify(token)) {
+            log.debug("doGetAuthenticationInfo 4-1:{}","token过期，重新登陆");
+            throw new TokenExpiredException("token过期，重新登陆");
+            // throw new AuthenticationException("AuthenticationException:token过期或者Token错误！");
+            }else {
+                // 判断AccessToken和refreshToken的时间节点是否一致
+                long current= (long) RedisUtil.get(username);
+                log.debug("判断AccessToken和refreshToken的时间节点是否一致",current);
+                if (current==JwtUtil.getExpire(token)){
+                    log.debug("doGetAuthenticationInfo 成功验证:{}","success");
+                    return new SimpleAuthenticationInfo(token,token,getName());
+                }else{
+                    throw new AuthenticationException("token已经失效，请重新登录！");
+                }
+            }
+        /*
+        }catch (Exception e){
+           log.debug("AuthenticationException:token过期或者Token错误jfoefjeof",e.getMessage());
+           throw new TokenExpiredException("token过期bbb，重新登陆");
+        }
+        */
     }
 }
