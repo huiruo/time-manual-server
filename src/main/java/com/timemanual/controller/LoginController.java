@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.timemanual.service.Login3Service;
 import com.timemanual.service.LoginService;
 import com.timemanual.util.CommonUtil;
+import com.timemanual.vo.ReqVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +24,7 @@ public class LoginController {
     /**
      * 登录
      */
+    /*
     @PostMapping("/auth")
     public JSONObject authLogin(@RequestBody JSONObject requestJson) {
         System.out.println("test---->"+requestJson.toJSONString());
@@ -35,6 +37,17 @@ public class LoginController {
         return login3Service.authLogin(username,password);
         // test end
         // return loginService.authLogin(requestJson);
+    }
+    */
+
+    @PostMapping("/auth")
+    //public ReqVo authLogin(@RequestBody JSONObject requestJson) {
+    public JSONObject authLogin(@RequestBody JSONObject requestJson) {
+        System.out.println("test---->"+requestJson.toJSONString());
+        CommonUtil.hasAllRequired(requestJson, "username,password");
+        String username = requestJson.getString("username");
+        String password = requestJson.getString("password");
+        return login3Service.authLogin(username,password);
     }
 
     /**
