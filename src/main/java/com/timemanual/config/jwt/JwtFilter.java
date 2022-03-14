@@ -1,12 +1,10 @@
 package com.timemanual.config.jwt;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.timemanual.config.redis.RedisUtil;
-import com.timemanual.util.constants.ErrorEnum;
 import com.timemanual.vo.ReqVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;

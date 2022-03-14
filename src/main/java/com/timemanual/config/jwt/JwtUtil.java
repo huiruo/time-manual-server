@@ -11,9 +11,9 @@ import java.util.Date;
 
 @Slf4j
 public class JwtUtil {
+    // public static final long EXPIRE_TIME = 30*1000;
     // token到期时间5分钟，毫秒为单位
-    // public static final long EXPIRE_TIME = 5*60*1000;
-    public static final long EXPIRE_TIME = 30*1000;
+    public static final long EXPIRE_TIME = 5*60*1000;
     // RefreshToken到期时间为30分钟，秒为单位
     public static final long REFRESH_EXPIRE_TIME = 30*60;
     // 密钥盐
