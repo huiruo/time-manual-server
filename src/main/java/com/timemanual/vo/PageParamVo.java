@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class PageParamVo {
     //  description = "页码", defaultValue =  1
-    private Integer currentPage = 1;
+    private Integer pageNum = 1;
 
     //	description = "页数", defaultValue = 10
     private Integer pageSize = 10;
