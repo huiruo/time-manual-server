@@ -24,7 +24,7 @@ public class ArticleController {
     // @RequiresAuthentication
     @RequestMapping("/user/article/query")
     public ReqVo<PaginationVo> queryArticle(@RequestBody PageParamVo pageParamVo){
-        PaginationVo paginationVo = articleService.queryArticle(pageParamVo.getCurrentPage(), pageParamVo.getPageSize());
+        PaginationVo paginationVo = articleService.queryArticle(pageParamVo.getPageNum(), pageParamVo.getPageSize());
         return new ReqVo<>(paginationVo);
     }
 

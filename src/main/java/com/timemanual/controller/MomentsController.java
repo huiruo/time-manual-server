@@ -20,7 +20,7 @@ public class MomentsController {
 
     @RequestMapping("/query")
     public ReqVo<PaginationVo> queryMoments(@RequestBody PageParamVo pageParamVo){
-        PaginationVo paginationVo = momentsService.queryMoments(pageParamVo.getCurrentPage(), pageParamVo.getPageSize());
+        PaginationVo paginationVo = momentsService.queryMoments(pageParamVo.getPageNum(), pageParamVo.getPageSize());
         return new ReqVo<>(paginationVo);
     }
 

@@ -22,22 +22,22 @@ public class MomentsServiceImpl  extends ServiceImpl<MomentsDao, Moments> implem
     MomentsDao momentsDao;
 
     @Override
-    public PaginationVo queryMoments(Integer currentPage, Integer pageSize) {
+    public PaginationVo queryMoments(Integer pageNum, Integer pageSize) {
         PaginationVo paginationVo = new PaginationVo<>();
-        paginationVo.setCurrent(currentPage);
-        paginationVo.setSize(pageSize);
+        paginationVo.setPageNum(pageNum);
+        paginationVo.setPageSize(pageSize);
 
         QueryWrapper<Moments> queryWrapper = new QueryWrapper<>();
         queryWrapper.orderByDesc("created_time");
 
         // 指定排序
-        Page page = new Page(currentPage, pageSize);
+        Page page = new Page(pageNum, pageSize);
         IPage<Moments> iPage = momentsDao.selectPage(page, queryWrapper);
         // 不指定排序
         // IPage<Moments> iPage = momentsDao.selectPage(page, new QueryWrapper<Moments>());
 
         paginationVo.setTotal(iPage.getTotal());
-        paginationVo.setData(iPage.getRecords());
+        paginationVo.setResult(iPage.getRecords());
 
         return paginationVo;
     }

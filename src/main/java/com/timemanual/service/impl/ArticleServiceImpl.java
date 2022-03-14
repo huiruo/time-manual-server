@@ -25,18 +25,18 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
     ArticleDao articleDao;
 
     @Override
-    public PaginationVo queryArticle(Integer currentPage, Integer pageSize) {
+    public PaginationVo queryArticle(Integer pageNum, Integer pageSize) {
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
         queryWrapper.orderByDesc("created_time");
 
-        Page page = new Page(currentPage, pageSize);
+        Page page = new Page(pageNum, pageSize);
         IPage<Article> iPage = articleDao.selectPage(page, queryWrapper);
 
         PaginationVo paginationVo = new PaginationVo();
-        paginationVo.setCurrent(currentPage);
-        paginationVo.setSize(pageSize);
+        paginationVo.setPageNum(pageNum);
+        paginationVo.setPageSize(pageSize);
         paginationVo.setTotal(iPage.getTotal());
-        paginationVo.setData(iPage.getRecords());
+        paginationVo.setResult(iPage.getRecords());
 
         return paginationVo;
     }
